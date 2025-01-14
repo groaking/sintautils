@@ -25,23 +25,41 @@ with sintautils. If not, see <https://www.gnu.org/licenses/>.
 class SintaException(Exception):
     """ The super-class for all exceptions related to sintautils. This exception should not be called directly. """
 
+class AuthorIDNotFoundException(SintaException):
+    """ Error raised when the author ID specified is not found in the SINTA database. """
+    
+    def __init__(self, arg: str = ''):
+        self.arg = arg
+    
+    def __repr__(self):
+        return f'Cannot locate author ID {self.arg}.'
+    
+    __str__ = __repr__
+
+class InvalidAuthorIDException(SintaException):
+    """ Error raised when the user specifies an invalid (i.e., non-numerical) author ID. """
+    def __repr__(self):
+        return 'You must specify a valid, numerical author ID.'
+    
+    __str__ = __repr__
+
 class InvalidLoginCredentialException(SintaException):
     """ Error raised when the wrong credentials are passed to the login functions in the scraper. """
     def __repr__(self):
-        return 'InvalidLoginCredentialException: Either your username or password cannot be used to perform the necessary login.'
+        return 'Either your username or password cannot be used to perform the necessary login.'
     
     __str__ = __repr__
 
 class NonStringParameterException(SintaException):
     """ Error raised when non-string parameters are passed to the login function. """
     def __repr__(self):
-        return 'NonStringParameterException: You can only pass variables of type str to the method.'
+        return 'You can only pass variables of type str to the method.'
     
     __str__ = __repr__
 
 class NoLoginCredentialsException(SintaException):
     """ Error raised when a `sintautils.scraper.AV` object is created without providing the necessary credential information. """
     def __repr__(self):
-        return 'NoLoginCredentialsException: You must provide username and password in order to use the AV scraper.'
+        return 'You must provide username and password in order to use the AV scraper.'
 
     __str__ = __repr__

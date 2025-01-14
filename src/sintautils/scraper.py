@@ -25,6 +25,8 @@ with sintautils. If not, see <https://www.gnu.org/licenses/>.
 from datetime import datetime as dt
 import requests as rq
 
+from .exceptions import AuthorIDNotFoundException
+from .exceptions import InvalidAuthorIDException
 from .exceptions import InvalidLoginCredentialException
 from .exceptions import NoLoginCredentialsException
 from .exceptions import NonStringParameterException
@@ -71,6 +73,20 @@ class AV(SintaScraper):
     
     LOGIN_URL = 'https://sinta.kemdikbud.go.id/authorverification/login/do_login'
     
+    URL_AUTHOR_SCOPUS = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=scopus'
+    
+    def _validate_author_id(self, n):
+        """ Return true if the input parameter is a valid ID, false if it contains illegal characters. """
+        
+        try:
+            int(str(n))
+            return True
+            
+        except ValueError:
+            return False
+        
+        return False
+    
     def __init__(self, username: str = '', password: str = '', autologin: bool = False):
         if type(username) != str or type(password) != str:
             raise NonStringParameterException()
@@ -84,6 +100,61 @@ class AV(SintaScraper):
             
             if autologin:
                 self.login()
+    
+    def get_scopus(self, author_id: list = [], output: str = 'csv', fields: list = ['*']):
+        """ Performs the scraping of individual author's scopus data.
+        
+        :param id_list: the list of author IDs to be scraped.
+        :param output: the format of the output result document.
+        
+        Currently, the only supported formats are as follows:
+        - "csv"
+        - "json"
+        - "xlsx"
+        
+        You can only specify one output format at a time.
+        
+        :param fields: the types of field to be scraped.
+        
+        Currently, the only supported fields are as follows:
+        - "*"
+        - "title"
+        - "creator"
+        - "document_type"
+        - "publish_year"
+        - "publication"
+        - "citations"
+        - "quartile"
+        
+        You can input more than one field. For instance:
+        - "title creator"
+        - "title,document_type,citations"
+        """
+        
+        if type(author_id) != str:
+            pass
+            # TODO:
+            # Directly scrape this singluar string.
+        
+        for l in author_id:
+            l = str(l).strip()
+            
+            # Validating the author ID.
+            if self._validate_author_id(l) == False:
+                raise InvalidAuthorIDException()
+            
+            # Try to open the author's specific menu page.
+            url = self.URL_AUTHOR_SCOPUS.replace('%%%', l)
+            r = self.s.get(url)
+            
+            if r.url == url:
+                self.print('Begin scrapping author ID ' + l + '...', 1)
+            
+            elif 'authorverification/login' in r.url:
+                raise InvalidLoginCredentialException()
+            
+            elif 'authorverification/author/all' in r.url:
+                raise AuthorIDNotFoundException(l)
     
     def login(self):
         """ Performs the credential login and obtains the session cookie for this account. """
