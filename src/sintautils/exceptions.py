@@ -50,6 +50,17 @@ class InvalidLoginCredentialException(SintaException):
     
     __str__ = __repr__
 
+class InvalidParameterException(SintaException):
+    """ Error raised when a function's parameter setting is not obeyed. """
+    
+    def __init__(self, arg: str = ''):
+        self.arg = arg
+    
+    def __repr__(self):
+        return f'Invaled parameter passed: {self.arg}.'
+    
+    __str__ = __repr__
+
 class NonStringParameterException(SintaException):
     """ Error raised when non-string parameters are passed to the login function. """
     def __repr__(self):
@@ -62,4 +73,16 @@ class NoLoginCredentialsException(SintaException):
     def __repr__(self):
         return 'You must provide username and password in order to use the AV scraper.'
 
+    __str__ = __repr__
+
+class MalformedDOMException(SintaException):
+    """ DOM-related error raised when, e.g., there is an item element
+    that does not have a particular property every other item has."""
+    
+    def __init__(self, arg: str = ''):
+        self.arg = arg
+    
+    def __repr__(self):
+        return f'Malformed DOM on URL: {self.arg}.'
+    
     __str__ = __repr__

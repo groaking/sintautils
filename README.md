@@ -2,7 +2,35 @@
 
 Python utility package for scraping information on SINTA (Science and Technology Index)
 
-## License Notice
+## A. Documentation
+
+### A.1. Author Verification
+
+#### A.1.i. Authentication
+
+Author verification menu is a restricted menu of SINTA. You must be registered as a university administrator and obtain an admin credential in order to use this function. An author verification (AV) admin's credential consists of an email-based username and a password.
+
+To use the AV scraper, you must first import it. And then, a scraper object called `AV` must be initialized and passed with AV admin's username and password. Finally, perform login using the scarper object in order to retrieve `requests` session cookie with the SINTA host.
+
+```python
+from sintautils import AV
+scraper = AV('admin@university.edu', 'password1234')
+scraper.login()
+```
+
+This can be done in two lines as follows:
+
+```python
+from sintautils import AV
+scraper = AV('admin@university.edu', 'password1234', autologin=True)
+```
+
+## B. To-Do
+
+- [ ] Add scopus, comm. service, and research syncer of each author.
+- [ ] Add scraper for all IPR and book.
+
+## C. License Notice
 
 ```
 This program is free software: you can redistribute it and/or modify it
