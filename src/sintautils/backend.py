@@ -1,0 +1,38 @@
+"""
+sintautils
+Created by: Samarthya Lykamanuella
+Establishment year: 2025
+
+LICENSE NOTICE:
+===============
+
+This file is part of sintautils.
+
+sintautils is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+sintautils is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with sintautils. If not, see <https://www.gnu.org/licenses/>.
+"""
+
+
+class UtilBackEnd(object):
+    """ The back-end of sintautils that contain static functions and methods. """
+
+    @staticmethod
+    def validate_author_id(n):
+        """ Return true if the input parameter is a valid ID, false if it contains illegal characters. """
+
+        try:
+            int(str(n))
+            return True
+
+        except ValueError:
+            return False

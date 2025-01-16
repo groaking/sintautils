@@ -22,8 +22,10 @@ You should have received a copy of the GNU General Public License along
 with sintautils. If not, see <https://www.gnu.org/licenses/>.
 """
 
+
 class SintaException(Exception):
     """ The super-class for all exceptions related to sintautils. This exception should not be called directly. """
+
 
 class AuthorIDNotFoundException(SintaException):
     """ Error raised when the author ID specified is not found in the SINTA database. """
@@ -36,12 +38,18 @@ class AuthorIDNotFoundException(SintaException):
     
     __str__ = __repr__
 
+
 class InvalidAuthorIDException(SintaException):
     """ Error raised when the user specifies an invalid (i.e., non-numerical) author ID. """
+
+    def __init__(self, arg: str = ''):
+        self.arg = arg
+
     def __repr__(self):
-        return 'You must specify a valid, numerical author ID.'
+        return f'Invalid author ID: {self.arg}. You must specify a valid, numerical author ID.'
     
     __str__ = __repr__
+
 
 class InvalidLoginCredentialException(SintaException):
     """ Error raised when the wrong credentials are passed to the login functions in the scraper. """
@@ -49,6 +57,7 @@ class InvalidLoginCredentialException(SintaException):
         return 'Either your username or password cannot be used to perform the necessary login.'
     
     __str__ = __repr__
+
 
 class InvalidParameterException(SintaException):
     """ Error raised when a function's parameter setting is not obeyed. """
@@ -61,6 +70,7 @@ class InvalidParameterException(SintaException):
     
     __str__ = __repr__
 
+
 class NonStringParameterException(SintaException):
     """ Error raised when non-string parameters are passed to the login function. """
     def __repr__(self):
@@ -68,12 +78,15 @@ class NonStringParameterException(SintaException):
     
     __str__ = __repr__
 
+
 class NoLoginCredentialsException(SintaException):
-    """ Error raised when a `sintautils.scraper.AV` object is created without providing the necessary credential information. """
+    """ Error raised when a `sintautils.scraper.AV` object is created without providing the necessary credential
+    information."""
     def __repr__(self):
         return 'You must provide username and password in order to use the AV scraper.'
 
     __str__ = __repr__
+
 
 class MalformedDOMException(SintaException):
     """ DOM-related error raised when, e.g., there is an item element
