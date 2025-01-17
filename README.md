@@ -27,8 +27,14 @@ scraper = AV('admin@university.edu', 'password1234', autologin=True)
 
 ## B. To-Do
 
+### B.1. New Features
+
 - [ ] Add scopus, comm. service, and research syncer of each author.
 - [ ] Add scraper for all IPR and book.
+
+### B.2. Bug Fixes
+
+- [ ] Google Scholar scraper: no publication case [1](https://sinta.kemdikbud.go.id/authorverification/author/profile/5973574?page=23&view=google)
 
 ## C. License Notice
 

@@ -145,13 +145,17 @@ class AV(SintaScraper):
         # Get the list of pagination.
         c = html.fromstring(r.text)
         try:
-            s = c.xpath('//*[@class="col-md-6 text-center text-lg-left light-font mb-3"]/small/text()')[0]
-            s = s.split('|')[0].replace('Page', '').split('of')
+            s = c.xpath('//div[@class="col-md-12"]/div[2]/div[2]/small/text()')[0]
+            s = s.strip().split('|')[0].replace('Page', '').split('of')
             page_to = int(s[1].strip())
 
         except IndexError:
             # This actually means that the author does not have a record. But still...
+            self.print(f'Index error in attempting to read the pagination!', 2)
             page_to = 1
+
+        # Preparing an empty list.
+        s1, s2, s3, s4, s5, s6 = [], [], [], [], [], []
 
         # Begin the scraping.
         i = 0
@@ -168,80 +172,80 @@ class AV(SintaScraper):
             c = html.fromstring(r.text)
 
             # Title
-            s1 = [n.strip() for n in c.xpath(base + '//a/text()')]
+            s1.extend([n.strip() for n in c.xpath(base + '//a/text()')])
 
             # Author
-            s2 = [n.replace('Author :', '').strip() for n in
-                  c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[1]/text()')]
+            s2.extend([n.replace('Author :', '').strip() for n in
+                  c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[1]/text()')])
 
             # Journal name
-            s3 = [n.strip() for n in c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[2]/text()')]
+            s3.extend([n.strip() for n in c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[2]/text()')])
 
             # Publication year
-            s4 = [n.strip() for n in c.xpath(base + '//td[2]//strong/text()')]
+            s4.extend([n.strip() for n in c.xpath(base + '//td[2]//strong/text()')])
 
             # Citations
-            s5 = [n.strip() for n in c.xpath(base + '//td[3]//strong/text()')]
+            s5.extend([n.strip() for n in c.xpath(base + '//td[3]//strong/text()')])
 
             # URL
-            s6 = [n.strip() for n in c.xpath(base + '//a/@href')]
+            s6.extend([n.strip() for n in c.xpath(base + '//a/@href')])
 
-            self.print(f'({len(s1)}, {len(s2)}, {len(s3)}, {len(s4)}, {len(s5)}, {len(s6)})', 2)
+        self.print(f'({len(s1)}, {len(s2)}, {len(s3)}, {len(s4)}, {len(s5)}, {len(s6)})', 2)
 
-            if not len(s1) == len(s2) == len(s3) == len(s4) == len(s5) == len(s6):
-                raise MalformedDOMException(new_url)
+        if not len(s1) == len(s2) == len(s3) == len(s4) == len(s5) == len(s6):
+            raise MalformedDOMException(new_url)
 
-            # Forge the Python dict.
-            t = []
-            for j in range(len(s1)):
-                # Building the JSON dict.
-                u = {}
+        # Forge the Python dict.
+        t = []
+        for j in range(len(s1)):
+            # Building the JSON dict.
+            u = {}
 
-                if '*' in fields or 'title' in fields:
-                    u['title'] = s1[j]
-
-                if '*' in fields or 'author' in fields:
-                    u['author'] = s2[j]
-
-                if '*' in fields or 'journal' in fields:
-                    u['journal'] = s3[j]
-
-                if '*' in fields or 'year' in fields:
-                    u['year'] = s4[j]
-
-                if '*' in fields or 'citations' in fields:
-                    u['citations'] = s5[j]
-
-                if '*' in fields or 'url' in fields:
-                    u['url'] = s6[j]
-
-                t.append(u)
-
-            # Forge the pandas DataFrame object.
-            # Building the CSV dict.
-            d = {}
             if '*' in fields or 'title' in fields:
-                d['title'] = s1
+                u['title'] = s1[j]
 
             if '*' in fields or 'author' in fields:
-                d['author'] = s2
+                u['author'] = s2[j]
 
             if '*' in fields or 'journal' in fields:
-                d['journal'] = s3
+                u['journal'] = s3[j]
 
             if '*' in fields or 'year' in fields:
-                d['year'] = s4
+                u['year'] = s4[j]
 
             if '*' in fields or 'citations' in fields:
-                d['citations'] = s5
+                u['citations'] = s5[j]
 
             if '*' in fields or 'url' in fields:
-                d['url'] = s6
+                u['url'] = s6[j]
 
-            if out_format == 'json':
-                return t
-            elif out_format == 'csv':
-                return d
+            t.append(u)
+
+        # Forge the pandas DataFrame object.
+        # Building the CSV dict.
+        d = {}
+        if '*' in fields or 'title' in fields:
+            d['title'] = s1
+
+        if '*' in fields or 'author' in fields:
+            d['author'] = s2
+
+        if '*' in fields or 'journal' in fields:
+            d['journal'] = s3
+
+        if '*' in fields or 'year' in fields:
+            d['year'] = s4
+
+        if '*' in fields or 'citations' in fields:
+            d['citations'] = s5
+
+        if '*' in fields or 'url' in fields:
+            d['url'] = s6
+
+        if out_format == 'json':
+            return t
+        elif out_format == 'csv':
+            return d
 
     def _scrape_scopus(self, author_id: str, out_format: str = 'json', fields: list = ['*']):
         """ Scrape the Scopus information of one, and only one author in SINTA.
@@ -281,13 +285,17 @@ class AV(SintaScraper):
         # Get the list of pagination.
         c = html.fromstring(r.text)
         try:
-            s = c.xpath('//*[@class="col-md-6 text-center text-lg-left light-font  mb-3"]/small/text()')[0]
-            s = s.split('|')[0].replace('Page', '').split('of')
+            s = c.xpath('//div[@class="col-md-12"]/div[2]/div[2]/small/text()')[0]
+            s = s.strip().split('|')[0].replace('Page', '').split('of')
             page_to = int( s[1].strip() )
 
         except IndexError:
             # This actually means that the author does not have a record. But still...
+            self.print(f'Index error in attempting to read the pagination!', 2)
             page_to = 1
+
+        # Preparing an empty list.
+        s1, s2, s3, s4, s5, s6, s7, s8 = [], [], [], [], [], [], [], []
 
         # Begin the scraping.
         i = 0
@@ -304,98 +312,98 @@ class AV(SintaScraper):
             c = html.fromstring(r.text)
 
             # Name
-            s1 = [n.strip() for n in c.xpath(base + '//a/text()')]
+            s1.extend([n.strip() for n in c.xpath(base + '//a/text()')])
 
             # Creator
-            s2 = [n.replace('Creator :', '').strip() for n in
-                  c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[1]/text()')]
+            s2.extend([n.replace('Creator :', '').strip() for n in
+                  c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[1]/text()')])
 
             # Journal name
-            s3 = [n.strip() for n in c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[2]/text()')]
+            s3.extend([n.strip() for n in c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[2]/text()')])
 
             # Publication type
-            s4 = [n.strip() for n in c.xpath(base + '//td[3]//strong[1]/text()')]
+            s4.extend([n.strip() for n in c.xpath(base + '//td[3]//strong[1]/text()')])
 
             # Publication year
-            s5 = [n.strip() for n in c.xpath(base + '//td[3]//strong[2]/text()')]
+            s5.extend([n.strip() for n in c.xpath(base + '//td[3]//strong[2]/text()')])
 
             # Citations
-            s6 = [n.strip() for n in c.xpath(base + '//td[4]//strong/text()')]
+            s6.extend([n.strip() for n in c.xpath(base + '//td[4]//strong/text()')])
 
             # Quartile
-            s7 = [n.strip() for n in c.xpath(base + '//td[1]/div/text()')]
+            s7.extend([n.strip() for n in c.xpath(base + '//td[1]/div/text()')])
 
             # URL
-            s8 = [n.strip() for n in c.xpath(base + '//a/@href')]
+            s8.extend([n.strip() for n in c.xpath(base + '//a/@href')])
 
-            self.print(f'({len(s1)}, {len(s2)}, {len(s3)}, {len(s4)}, {len(s5)}, {len(s6)}, {len(s7)}, {len(s8)})', 2)
+        self.print(f'({len(s1)}, {len(s2)}, {len(s3)}, {len(s4)}, {len(s5)}, {len(s6)}, {len(s7)}, {len(s8)})', 2)
 
-            if not len(s1) == len(s2) == len(s3) == len(s4) == len(s5) == len(s6) == len(s7) == len(s8):
-                raise MalformedDOMException(new_url)
+        if not len(s1) == len(s2) == len(s3) == len(s4) == len(s5) == len(s6) == len(s7) == len(s8):
+            raise MalformedDOMException(new_url)
 
-            # Forge the Python dict.
-            t = []
-            for j in range(len(s1)):
-                # Building the JSON dict.
-                u = {}
+        # Forge the Python dict.
+        t = []
+        for j in range(len(s1)):
+            # Building the JSON dict.
+            u = {}
 
-                if '*' in fields or 'name' in fields:
-                    u['name'] = s1[j]
-
-                if '*' in fields or 'creator' in fields:
-                    u['creator'] = s2[j]
-
-                if '*' in fields or 'journal' in fields:
-                    u['journal'] = s3[j]
-
-                if '*' in fields or 'type' in fields:
-                    u['type'] = s4[j]
-
-                if '*' in fields or 'year' in fields:
-                    u['year'] = s5[j]
-
-                if '*' in fields or 'citations' in fields:
-                    u['citations'] = s6[j]
-
-                if '*' in fields or 'quartile' in fields:
-                    u['quartile'] = s7[j]
-
-                if '*' in fields or 'url' in fields:
-                    u['url'] = s8[j]
-
-                t.append(u)
-
-            # Forge the pandas DataFrame object.
-            # Building the CSV dict.
-            d = {}
             if '*' in fields or 'name' in fields:
-                d['name'] = s1
+                u['name'] = s1[j]
 
             if '*' in fields or 'creator' in fields:
-                d['creator'] = s2
+                u['creator'] = s2[j]
 
             if '*' in fields or 'journal' in fields:
-                d['journal'] = s3
+                u['journal'] = s3[j]
 
             if '*' in fields or 'type' in fields:
-                d['type'] = s4
+                u['type'] = s4[j]
 
             if '*' in fields or 'year' in fields:
-                d['year'] = s5
+                u['year'] = s5[j]
 
             if '*' in fields or 'citations' in fields:
-                d['citations'] = s6
+                u['citations'] = s6[j]
 
             if '*' in fields or 'quartile' in fields:
-                d['quartile'] = s7
+                u['quartile'] = s7[j]
 
             if '*' in fields or 'url' in fields:
-                d['url'] = s8
+                u['url'] = s8[j]
 
-            if out_format == 'json':
-                return t
-            elif out_format == 'csv':
-                return d
+            t.append(u)
+
+        # Forge the pandas DataFrame object.
+        # Building the CSV dict.
+        d = {}
+        if '*' in fields or 'name' in fields:
+            d['name'] = s1
+
+        if '*' in fields or 'creator' in fields:
+            d['creator'] = s2
+
+        if '*' in fields or 'journal' in fields:
+            d['journal'] = s3
+
+        if '*' in fields or 'type' in fields:
+            d['type'] = s4
+
+        if '*' in fields or 'year' in fields:
+            d['year'] = s5
+
+        if '*' in fields or 'citations' in fields:
+            d['citations'] = s6
+
+        if '*' in fields or 'quartile' in fields:
+            d['quartile'] = s7
+
+        if '*' in fields or 'url' in fields:
+            d['url'] = s8
+
+        if out_format == 'json':
+            return t
+        elif out_format == 'csv':
+            return d
 
     def get_gscholar(self, author_id: list = [], out_format: str = 'csv', fields: list = ['*']):
         """ Performs the scraping of individual author's Google Scholar data.
