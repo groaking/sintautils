@@ -79,6 +79,7 @@ class AV(SintaScraper):
     LOGIN_URL = 'https://sinta.kemdikbud.go.id/authorverification/login/do_login'
 
     URL_AUTHOR_SCOPUS = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=scopus'
+    URL_AUTHOR_GSCHOLAR = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=google'
 
     def __init__(self, username: str = '', password: str = '', autologin: bool = False):
         if type(username) is not str or type(password) is not str:
@@ -107,6 +108,140 @@ class AV(SintaScraper):
 
         elif 'authorverification/author/all' in r.url:
             raise AuthorIDNotFoundException(author_id)
+
+    def _scrape_gscholar(self, author_id: str, out_format: str = 'json', fields: list = ['*']):
+        """ Scrape the Google Scholar information of one, and only one author in SINTA.
+        Returns a Python array/list of dictionaries.
+
+        The only supported out (return) formats are as follows:
+        - "json" (includes both dict and list)
+        - "csv" (stored as pandas DataFrame object)
+
+        The fields that will be returned are as follows:
+        - "*"
+        - "title"
+        - "author"
+        - "journal"
+        - "year"
+        - "citations"
+        - "url"
+        """
+        l = str(author_id).strip()
+
+        # Validating the output format.
+        if out_format not in ['csv', 'json']:
+            raise InvalidParameterException('"out_format" must be one of "csv" and "json"')
+
+        # Validating the author ID.
+        if not UtilBackEnd.validate_author_id(l):
+            raise InvalidAuthorIDException(l)
+
+        # Try to open the author's specific menu page.
+        url = self.URL_AUTHOR_GSCHOLAR.replace('%%%', l)
+        r = self._http_get_with_exception(url, author_id=author_id)
+
+        self.print('Begin scrapping author ID ' + l + '...', 2)
+
+        # Get the list of pagination.
+        c = html.fromstring(r.text)
+        try:
+            s = c.xpath('//*[@class="col-md-6 text-center text-lg-left light-font mb-3"]/small/text()')[0]
+            s = s.split('|')[0].replace('Page', '').split('of')
+            page_to = int(s[1].strip())
+
+        except IndexError:
+            # This actually means that the author does not have a record. But still...
+            page_to = 1
+
+        # Begin the scraping.
+        i = 0
+        while i < page_to:
+            i += 1
+            self.print(f'Scraping page: {i}...', 2)
+
+            # The base tag.
+            base = '//div[@class="table-responsive"]/table[@class="table"]//tr'
+
+            # Opens the URL of this page.
+            new_url = url + '&page=' + str(i)
+            r = self._http_get_with_exception(new_url, author_id=author_id)
+            c = html.fromstring(r.text)
+
+            # Title
+            s1 = [n.strip() for n in c.xpath(base + '//a/text()')]
+
+            # Author
+            s2 = [n.replace('Author :', '').strip() for n in
+                  c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[1]/text()')]
+
+            # Journal name
+            s3 = [n.strip() for n in c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[2]/text()')]
+
+            # Publication year
+            s4 = [n.strip() for n in c.xpath(base + '//td[2]//strong/text()')]
+
+            # Citations
+            s5 = [n.strip() for n in c.xpath(base + '//td[3]//strong/text()')]
+
+            # URL
+            s6 = [n.strip() for n in c.xpath(base + '//a/@href')]
+
+            self.print(f'({len(s1)}, {len(s2)}, {len(s3)}, {len(s4)}, {len(s5)}, {len(s6)})', 2)
+
+            if not len(s1) == len(s2) == len(s3) == len(s4) == len(s5) == len(s6):
+                raise MalformedDOMException(new_url)
+
+            # Forge the Python dict.
+            t = []
+            for j in range(len(s1)):
+                # Building the JSON dict.
+                u = {}
+
+                if '*' in fields or 'title' in fields:
+                    u['title'] = s1[j]
+
+                if '*' in fields or 'author' in fields:
+                    u['author'] = s2[j]
+
+                if '*' in fields or 'journal' in fields:
+                    u['journal'] = s3[j]
+
+                if '*' in fields or 'year' in fields:
+                    u['year'] = s4[j]
+
+                if '*' in fields or 'citations' in fields:
+                    u['citations'] = s5[j]
+
+                if '*' in fields or 'url' in fields:
+                    u['url'] = s6[j]
+
+                t.append(u)
+
+            # Forge the pandas DataFrame object.
+            # Building the CSV dict.
+            d = {}
+            if '*' in fields or 'title' in fields:
+                d['title'] = s1
+
+            if '*' in fields or 'author' in fields:
+                d['author'] = s2
+
+            if '*' in fields or 'journal' in fields:
+                d['journal'] = s3
+
+            if '*' in fields or 'year' in fields:
+                d['year'] = s4
+
+            if '*' in fields or 'citations' in fields:
+                d['citations'] = s5
+
+            if '*' in fields or 'url' in fields:
+                d['url'] = s6
+
+            if out_format == 'json':
+                return t
+            elif out_format == 'csv':
+                return d
 
     def _scrape_scopus(self, author_id: str, out_format: str = 'json', fields: list = ['*']):
         """ Scrape the Scopus information of one, and only one author in SINTA.
@@ -158,6 +293,7 @@ class AV(SintaScraper):
         i = 0
         while i < page_to:
             i += 1
+            self.print(f'Scraping page: {i}...', 2)
 
             # The base tag.
             base = '//div[@class="table-responsive"]/table[@class="table"]//tr'
@@ -261,6 +397,51 @@ class AV(SintaScraper):
             elif out_format == 'csv':
                 return d
 
+    def get_gscholar(self, author_id: list = [], out_format: str = 'csv', fields: list = ['*']):
+        """ Performs the scraping of individual author's Google Scholar data.
+
+        :param author_id: the list of author IDs to be scraped.
+        :param out_format: the format of the output result document.
+
+        Currently, the only supported formats are as follows:
+        - "csv"
+        - "json"
+
+        You can only specify one output format at a time.
+
+        :param fields: the types of field to be scraped.
+
+        Currently, the only supported fields are as follows:
+        - "*"
+        - "title"
+        - "author"
+        - "journal"
+        - "year"
+        - "citations"
+        - "url"
+
+        You can input more than one field. For instance:
+        - ["journal", "url"]
+        - ["title", "author", "year"]
+
+        Use asterisk in order to return all fields:
+        - ["*"]
+        """
+
+        if type(author_id) is str:
+            a = self._scrape_gscholar(author_id=str(author_id), out_format=out_format, fields=fields)
+
+        elif type(author_id) is list:
+            a = []
+            for l in author_id:
+                self.print(f'Scraping for author ID: {l}...', 2)
+                a.extend(self._scrape_gscholar(author_id=l, out_format=out_format, fields=fields))
+
+        else:
+            raise InvalidParameterException('You can only pass list or string into this function')
+
+        return a
+
     def get_scopus(self, author_id: list = [], out_format: str = 'csv', fields: list = ['*']):
         """ Performs the scraping of individual author's scopus data.
 
@@ -300,6 +481,7 @@ class AV(SintaScraper):
         elif type(author_id) is list:
             a = []
             for l in author_id:
+                self.print(f'Scraping for creator ID: {l}...', 2)
                 a.extend(self._scrape_scopus(author_id=l, out_format=out_format, fields=fields))
 
         else:
