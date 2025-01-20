@@ -36,6 +36,11 @@ scraper = AV('admin@university.edu', 'password1234', autologin=True)
 
 - [X] Google Scholar scraper: no publication case
 
+### B.3. Improvements
+
+- [ ] Bulk scraping of author list: return a dict with each author ID as key instead of just a plain list
+- [ ] Move `_scrape_scopus`, `_scrape_wos` etc. functions to `backend.py`
+
 ## C. License Notice
 
 ```
