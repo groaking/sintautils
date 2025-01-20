@@ -126,7 +126,7 @@ class AV(SintaScraper):
         - "citations"
         - "url"
         """
-        l = str(author_id).strip()
+        l: str = str(author_id).strip()
 
         # Validating the output format.
         if out_format not in ['csv', 'json']:
@@ -157,38 +157,66 @@ class AV(SintaScraper):
         # Preparing an empty list.
         s1, s2, s3, s4, s5, s6 = [], [], [], [], [], []
 
+        # Preparing the temporary URL.
+        new_url: str = str()
+
         # Begin the scraping.
         i = 0
         while i < page_to:
             i += 1
             self.print(f'Scraping page: {i}...', 2)
 
-            # The base tag.
-            base = '//div[@class="table-responsive"]/table[@class="table"]//tr'
-
             # Opens the URL of this page.
             new_url = url + '&page=' + str(i)
             r = self._http_get_with_exception(new_url, author_id=author_id)
             c = html.fromstring(r.text)
 
-            # Title
-            s1.extend([n.strip() for n in c.xpath(base + '//a/text()')])
+            # The base tag.
+            base = '//div[@class="table-responsive"]/table[@class="table"]//tr'
+            c_base = c.xpath(base)
 
-            # Author
-            s2.extend([n.replace('Author :', '').strip() for n in
-                  c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[1]/text()')])
+            for a in c_base:
+                # Title.
+                try:
+                    s1.append(a.xpath('.//a/text()')[0].strip())
+                except IndexError:
+                    s1.append('')
 
-            # Journal name
-            s3.extend([n.strip() for n in c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[2]/text()')])
+                # Author.
+                try:
+                    x: str = a.xpath('.//td[@class="text-lg-nowrap text-nowrap"]//small[1]/text()')[0]
+                    if x.__contains__('Author :'):
+                        s2.append(x.replace('Author :', '').strip())
+                    else:
+                        # This is publication info, not author info.
+                        # The author info must be missing.
+                        s2.append('')
+                except IndexError:
+                    s2.append('')
 
-            # Publication year
-            s4.extend([n.strip() for n in c.xpath(base + '//td[2]//strong/text()')])
+                # Journal name.
+                try:
+                    s3.append(a.xpath('.//td[@class="text-lg-nowrap text-nowrap"]//small[2]/text()')[0].strip())
+                except IndexError:
+                    s3.append('')
 
-            # Citations
-            s5.extend([n.strip() for n in c.xpath(base + '//td[3]//strong/text()')])
+                # Publication year.
+                try:
+                    s4.append(a.xpath('.//td[2]//strong/text()')[0].strip())
+                except IndexError:
+                    s4.append('')
 
-            # URL
-            s6.extend([n.strip() for n in c.xpath(base + '//a/@href')])
+                # Citations.
+                try:
+                    s5.append(a.xpath('.//td[3]//strong/text()')[0].strip())
+                except IndexError:
+                    s5.append('')
+
+                # URL.
+                try:
+                    s6.append(a.xpath('.//a/@href')[0].strip())
+                except IndexError:
+                    s6.append('')
 
         self.print(f'({len(s1)}, {len(s2)}, {len(s3)}, {len(s4)}, {len(s5)}, {len(s6)})', 2)
 
@@ -257,8 +285,8 @@ class AV(SintaScraper):
 
         The fields that will be returned are as follows:
         - "*"
-        - "name"
-        - "creator"
+        - "title"
+        - "author"
         - "journal"
         - "type"
         - "year"
@@ -266,7 +294,7 @@ class AV(SintaScraper):
         - "quartile"
         - "url"
         """
-        l = str(author_id).strip()
+        l: str = str(author_id).strip()
 
         # Validating the output format.
         if out_format not in ['csv', 'json']:
@@ -297,44 +325,78 @@ class AV(SintaScraper):
         # Preparing an empty list.
         s1, s2, s3, s4, s5, s6, s7, s8 = [], [], [], [], [], [], [], []
 
+        # Preparing the temporary URL.
+        new_url: str = str()
+
         # Begin the scraping.
         i = 0
         while i < page_to:
             i += 1
             self.print(f'Scraping page: {i}...', 2)
 
-            # The base tag.
-            base = '//div[@class="table-responsive"]/table[@class="table"]//tr'
-
             # Opens the URL of this page.
             new_url = url + '&page=' + str(i)
             r = self._http_get_with_exception(new_url, author_id=author_id)
             c = html.fromstring(r.text)
 
-            # Name
-            s1.extend([n.strip() for n in c.xpath(base + '//a/text()')])
+            # The base tag.
+            base = '//div[@class="table-responsive"]/table[@class="table"]//tr'
+            c_base = c.xpath(base)
 
-            # Creator
-            s2.extend([n.replace('Creator :', '').strip() for n in
-                  c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[1]/text()')])
+            for a in c_base:
+                # Title.
+                try:
+                    s1.append(a.xpath('.//a/text()')[0].strip())
+                except IndexError:
+                    s1.append('')
 
-            # Journal name
-            s3.extend([n.strip() for n in c.xpath(base + '//td[@class="text-lg-nowrap text-nowrap"]//small[2]/text()')])
+                # Author.
+                try:
+                    x: str = a.xpath('.//td[@class="text-lg-nowrap text-nowrap"]//small[1]/text()')[0]
+                    if x.__contains__('Creator :'):
+                        s2.append(x.replace('Creator :', '').strip())
+                    else:
+                        # This is publication info, not author info.
+                        # The author info must be missing.
+                        s2.append('')
+                except IndexError:
+                    s2.append('')
 
-            # Publication type
-            s4.extend([n.strip() for n in c.xpath(base + '//td[3]//strong[1]/text()')])
+                # Journal name.
+                try:
+                    s3.append(a.xpath('.//td[@class="text-lg-nowrap text-nowrap"]//small[2]/text()')[0].strip())
+                except IndexError:
+                    s3.append('')
 
-            # Publication year
-            s5.extend([n.strip() for n in c.xpath(base + '//td[3]//strong[2]/text()')])
+                # Publication type.
+                try:
+                    s4.append(a.xpath('.//td[3]//strong[1]/text()')[0].strip())
+                except IndexError:
+                    s4.append('')
 
-            # Citations
-            s6.extend([n.strip() for n in c.xpath(base + '//td[4]//strong/text()')])
+                # Publication year.
+                try:
+                    s5.append(a.xpath('.//td[3]//strong[2]/text()')[0].strip())
+                except IndexError:
+                    s5.append('')
 
-            # Quartile
-            s7.extend([n.strip() for n in c.xpath(base + '//td[1]/div/text()')])
+                # Citations.
+                try:
+                    s6.append(a.xpath('.//td[4]//strong/text()')[0].strip())
+                except IndexError:
+                    s6.append('')
 
-            # URL
-            s8.extend([n.strip() for n in c.xpath(base + '//a/@href')])
+                # Quartile.
+                try:
+                    s7.append(a.xpath('.//td[1]/div/text()')[0].strip())
+                except IndexError:
+                    s7.append('')
+
+                # URL.
+                try:
+                    s8.append(a.xpath('.//a/@href')[0].strip())
+                except IndexError:
+                    s8.append('')
 
         self.print(f'({len(s1)}, {len(s2)}, {len(s3)}, {len(s4)}, {len(s5)}, {len(s6)}, {len(s7)}, {len(s8)})', 2)
 
@@ -347,11 +409,11 @@ class AV(SintaScraper):
             # Building the JSON dict.
             u = {}
 
-            if '*' in fields or 'name' in fields:
-                u['name'] = s1[j]
+            if '*' in fields or 'title' in fields:
+                u['title'] = s1[j]
 
-            if '*' in fields or 'creator' in fields:
-                u['creator'] = s2[j]
+            if '*' in fields or 'author' in fields:
+                u['author'] = s2[j]
 
             if '*' in fields or 'journal' in fields:
                 u['journal'] = s3[j]
@@ -376,11 +438,11 @@ class AV(SintaScraper):
         # Forge the pandas DataFrame object.
         # Building the CSV dict.
         d = {}
-        if '*' in fields or 'name' in fields:
-            d['name'] = s1
+        if '*' in fields or 'title' in fields:
+            d['title'] = s1
 
-        if '*' in fields or 'creator' in fields:
-            d['creator'] = s2
+        if '*' in fields or 'author' in fields:
+            d['author'] = s2
 
         if '*' in fields or 'journal' in fields:
             d['journal'] = s3
@@ -466,8 +528,8 @@ class AV(SintaScraper):
         
         Currently, the only supported fields are as follows:
         - "*"
-        - "name"
-        - "creator"
+        - "title"
+        - "author"
         - "journal"
         - "type"
         - "year"

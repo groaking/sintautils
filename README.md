@@ -34,7 +34,7 @@ scraper = AV('admin@university.edu', 'password1234', autologin=True)
 
 ### B.2. Bug Fixes
 
-- [ ] Google Scholar scraper: no publication case [1](https://sinta.kemdikbud.go.id/authorverification/author/profile/5973574?page=23&view=google)
+- [X] Google Scholar scraper: no publication case
 
 ## C. License Notice
 
