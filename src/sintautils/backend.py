@@ -34,6 +34,7 @@ class UtilBackEnd(object):
     URL_AUTHOR_GSCHOLAR = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=google'
     URL_AUTHOR_IPR = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=ipr'
     URL_AUTHOR_SCOPUS = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=scopus'
+    URL_AUTHOR_RESEARCH = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=research'
     URL_AUTHOR_WOS = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=wos'
 
     def __init__(self, requests_session: Session, logger: ()):
@@ -43,7 +44,7 @@ class UtilBackEnd(object):
 
     @staticmethod
     def _ipr_heuristics_handler(el):
-        """ Determines whether a given DOM element contains "No. Permohonan", "Inventor", or "Pemegang Paten".
+        """ Determines whether a given DOM element contains "No. Permohonan", "Inventor", or "Pemegang Paten" strings.
 
         :param el: the XPATH element as DOM object to consider for element detection.
         :return: a dict of the following keys: "application_no", "inventor", and "patent_holder".
@@ -76,6 +77,52 @@ class UtilBackEnd(object):
                 ret_dict[key] = s2.replace(lookup_word, '')
             elif s3.__contains__(lookup_word):
                 ret_dict[key] = s3.replace(lookup_word, '')
+            else:
+                ret_dict[key] = ''
+
+        return ret_dict
+
+    @staticmethod
+    def _research_heuristics_handler(el):
+        """ Determines whether a given DOM element contains "Funds approved", "Program Hibah", or "Skema" strings.
+
+        :param el: the XPATH element as DOM object to consider for element detection.
+        :return: a dict of the following keys: "funds", "program", and "schema".
+        """
+        ret_dict: dict = {}
+
+        # Scraping each <small> element.
+        try:
+            s1 = el.xpath('./small[1]/text()')[0]
+        except IndexError:
+            s1 = ''
+        try:
+            s2 = el.xpath('./small[2]/text()')[0]
+        except IndexError:
+            s2 = ''
+        try:
+            s3 = el.xpath('./small[3]/text()')[0]
+        except IndexError:
+            s3 = ''
+        try:
+            s4 = el.xpath('./small[4]/text()')[0]
+        except IndexError:
+            s4 = ''
+
+        # Carry out the heuristics.
+        a = ['Funds approved : ', 'Program Hibah : ', 'Skema : ']
+        b = ['funds', 'program', 'schema']
+        for i in range(len(a)):
+            lookup_word = a[i]
+            key = b[i]
+            if s1.__contains__(lookup_word):
+                ret_dict[key] = s1.replace(lookup_word, '')
+            elif s2.__contains__(lookup_word):
+                ret_dict[key] = s2.replace(lookup_word, '')
+            elif s3.__contains__(lookup_word):
+                ret_dict[key] = s3.replace(lookup_word, '')
+            elif s4.__contains__(lookup_word):
+                ret_dict[key] = s4.replace(lookup_word, '')
             else:
                 ret_dict[key] = ''
 
@@ -353,9 +400,9 @@ class UtilBackEnd(object):
                 # Application number, inventor, and patent holder.
                 b = a.xpath('.//td[1]')[0]
                 x = self._ipr_heuristics_handler(b)
-                s2.append(x['application_no'])
-                s3.append(x['inventor'])
-                s4.append(x['patent_holder'])
+                s2.append(x['application_no'].strip())
+                s3.append(x['inventor'].strip())
+                s4.append(x['patent_holder'].strip())
 
                 # Category.
                 try:
@@ -432,6 +479,170 @@ class UtilBackEnd(object):
 
         if '*' in fields or 'status' in fields:
             d['status'] = s7
+
+        if out_format == 'json':
+            return t
+        elif out_format == 'csv':
+            return d
+
+    # noinspection PyDefaultArgument
+    def scrape_research(self, author_id: str, out_format: str = 'json', fields: list = ['*']):
+        """ Scrape the research information of one, and only one author in SINTA.
+        Returns a Python array/list of dictionaries.
+
+        The only supported out (return) formats are as follows:
+        - "json" (includes both dict and list)
+        - "csv" (stored as pandas DataFrame object)
+
+        The fields that will be returned are as follows:
+        - "*"
+        - "title"
+        - "funds"
+        - "program"
+        - "schema"
+        - "year"
+        - "membership"
+        - "url"
+        """
+        l: str = str(author_id).strip()
+
+        # Validating the output format.
+        if out_format not in ['csv', 'json']:
+            raise InvalidParameterException('"out_format" must be one of "csv" and "json"')
+
+        # Validating the author ID.
+        if not self.validate_author_id(l):
+            raise InvalidAuthorIDException(l)
+
+        # Try to open the author's specific menu page.
+        url = self.URL_AUTHOR_RESEARCH.replace('%%%', l)
+        r = self._http_get_with_exception(url, author_id=author_id)
+
+        self.print('Begin scrapping author ID ' + l + '...', 2)
+
+        # Get the list of pagination.
+        c = html.fromstring(r.text)
+        try:
+            s = c.xpath('//div[@class="row"]/div[@class="col-6 text-right"]/small/i/text()')[0]
+            s = s.strip().split('|')[0].replace('Page', '').split('of')
+            page_to = int(s[1].strip())
+            self.print('Detected number of pages: ' + str(page_to), 2)
+
+        except IndexError:
+            # This actually means that the author does not have a record. But still...
+            self.print(f'Index error in attempting to read the pagination!', 2)
+            page_to = 1
+
+        # Preparing an empty list.
+        s1, s2, s3, s4, s5, s6, s7 = [], [], [], [], [], [], []
+
+        # Preparing the temporary URL.
+        new_url: str = str()
+
+        # Begin the scraping.
+        i = 0
+        while i < page_to:
+            i += 1
+            self.print(f'Scraping page: {i}...', 2)
+
+            # Opens the URL of this page.
+            new_url = url + '&page=' + str(i)
+            r = self._http_get_with_exception(new_url, author_id=author_id)
+            c = html.fromstring(r.text)
+
+            # The base tag.
+            base = '//div[@class="row"]/div[@class="col-12"]/table[@class="table"]//tr'
+            c_base = c.xpath(base)
+
+            for a in c_base:
+                # Title.
+                try:
+                    s1.append(a.xpath('.//td[1]/a/text()')[0].strip())
+                except IndexError:
+                    s1.append('')
+
+                # Funds, program, and schema.
+                b = a.xpath('.//td[1]')[0]
+                x = self._research_heuristics_handler(b)
+                s2.append(x['funds'].strip())
+                s3.append(x['program'].strip())
+                s4.append(x['schema'].strip())
+
+                # Publish year.
+                try:
+                    s5.append(a.xpath('.//td[2]//strong/text()')[0].strip())
+                except IndexError:
+                    s5.append('')
+
+                # Membership role.
+                try:
+                    s6.append(a.xpath('.//td[3]//strong/text()')[0].strip())
+                except IndexError:
+                    s6.append('')
+
+                # Url.
+                try:
+                    s7.append(a.xpath('.//td[1]/a/@href')[0].strip())
+                except IndexError:
+                    s7.append('')
+
+        self.print(f'({len(s1)}, {len(s2)}, {len(s3)}, {len(s4)}, {len(s5)}, {len(s6)}, {len(s7)})', 2)
+
+        if not len(s1) == len(s2) == len(s3) == len(s4) == len(s5) == len(s6) == len(s7):
+            raise MalformedDOMException(new_url)
+
+        # Forge the Python dict.
+        t = []
+        for j in range(len(s1)):
+            # Building the JSON dict.
+            u = {}
+
+            if '*' in fields or 'title' in fields:
+                u['title'] = s1[j]
+
+            if '*' in fields or 'funds' in fields:
+                u['funds'] = s2[j]
+
+            if '*' in fields or 'program' in fields:
+                u['program'] = s3[j]
+
+            if '*' in fields or 'schema' in fields:
+                u['schema'] = s4[j]
+
+            if '*' in fields or 'year' in fields:
+                u['year'] = s5[j]
+
+            if '*' in fields or 'membership' in fields:
+                u['membership'] = s6[j]
+
+            if '*' in fields or 'url' in fields:
+                u['url'] = s7[j]
+
+            t.append(u)
+
+        # Forge the pandas DataFrame object.
+        # Building the CSV dict.
+        d = {}
+        if '*' in fields or 'title' in fields:
+            d['title'] = s1
+
+        if '*' in fields or 'funds' in fields:
+            d['funds'] = s2
+
+        if '*' in fields or 'program' in fields:
+            d['program'] = s3
+
+        if '*' in fields or 'schema' in fields:
+            d['schema'] = s4
+
+        if '*' in fields or 'year' in fields:
+            d['year'] = s5
+
+        if '*' in fields or 'membership' in fields:
+            d['membership'] = s6
+
+        if '*' in fields or 'url' in fields:
+            d['url'] = s7
 
         if out_format == 'json':
             return t
