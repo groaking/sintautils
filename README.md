@@ -31,7 +31,7 @@ scraper = AV('admin@university.edu', 'password1234', autologin=True)
 
 - [X] Add scopus, comm. service, and research scraper of each author.
 - [ ] Add scopus, research and comm. service sync per author.
-- [ ] Add scraper for all IPR and book.
+- [X] Add scraper for IPR and book of each author.
 - [ ] Add garuda scraper per author.
 
 ### B.2. Bug Fixes

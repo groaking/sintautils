@@ -31,6 +31,7 @@ from .exceptions import InvalidParameterException, InvalidAuthorIDException, \
 class UtilBackEnd(object):
     """ The back-end of sintautils that contain static functions and methods. """
 
+    URL_AUTHOR_BOOK = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=book'
     URL_AUTHOR_GSCHOLAR = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=google'
     URL_AUTHOR_IPR = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=ipr'
     URL_AUTHOR_SCOPUS = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=scopus'
@@ -42,6 +43,73 @@ class UtilBackEnd(object):
         super().__init__()
         self.print = logger
         self.s = requests_session
+
+    @staticmethod
+    def _book_heuristics_handler(el):
+        """ Scrape with validation a given book row's ISBN, author, publisher, and page information.
+
+        :param el: the XPATH element as DOM object to consider for element detection.
+        :return: a dict of the following keys: "isbn", "author", "publisher", and "page".
+        """
+        ret_dict: dict = {}
+
+        # Scraping each <small> element.
+        try:
+            s1 = el.xpath('./small[1]/text()')[0]
+        except IndexError:
+            s1 = ''
+        try:
+            s2 = el.xpath('./small[2]/text()')[0]
+        except IndexError:
+            s2 = ''
+        try:
+            s3 = el.xpath('./small[3]/text()')[0]
+        except IndexError:
+            s3 = ''
+        try:
+            s4 = el.xpath('./small[4]/text()')[0]
+        except IndexError:
+            s4 = ''
+
+        # Carry out the heuristics.
+        a = ['ISBN : ', 'Author : ']
+        b = ['isbn', 'author']
+        for i in range(len(a)):
+            lookup_word = a[i]
+            key = b[i]
+            if s1.__contains__(lookup_word):
+                ret_dict[key] = s1.replace(lookup_word, '')
+            elif s2.__contains__(lookup_word):
+                ret_dict[key] = s2.replace(lookup_word, '')
+            elif s3.__contains__(lookup_word):
+                ret_dict[key] = s3.replace(lookup_word, '')
+            elif s4.__contains__(lookup_word):
+                ret_dict[key] = s4.replace(lookup_word, '')
+            else:
+                ret_dict[key] = ''
+
+        # Now for the special case.
+        if s1.__contains__('|'):
+            x = s1.split('|')
+            ret_dict['publisher'] = x[0].strip()
+            ret_dict['page'] = x[1].replace('Page', '').strip()
+        elif s2.__contains__('|'):
+            x = s2.split('|')
+            ret_dict['publisher'] = x[0].strip()
+            ret_dict['page'] = x[1].replace('Page', '').strip()
+        elif s3.__contains__('|'):
+            x = s3.split('|')
+            ret_dict['publisher'] = x[0].strip()
+            ret_dict['page'] = x[1].replace('Page', '').strip()
+        elif s4.__contains__('|'):
+            x = s4.split('|')
+            ret_dict['publisher'] = x[0].strip()
+            ret_dict['page'] = x[1].replace('Page', '').strip()
+        else:
+            ret_dict['publisher'] = ''
+            ret_dict['page'] = ''
+
+        return ret_dict
 
     @staticmethod
     def _ipr_heuristics_handler(el):
@@ -199,6 +267,193 @@ class UtilBackEnd(object):
 
         elif 'authorverification/author/all' in r.url:
             raise AuthorIDNotFoundException(author_id)
+
+    # noinspection PyDefaultArgument
+    def scrape_book(self, author_id: str, out_format: str = 'json', fields: list = ['*']):
+        """ Scrape the book information of one, and only one author in SINTA.
+        Returns a Python array/list of dictionaries.
+
+        The only supported out (return) formats are as follows:
+        - "json" (includes both dict and list)
+        - "csv" (stored as pandas DataFrame object)
+
+        The fields that will be returned are as follows:
+        - "*"
+        - "title"
+        - "isbn"
+        - "author"
+        - "publisher"
+        - "page"
+        - "year"
+        - "location"
+        - "thumbnail"
+        - "url"
+        """
+        l: str = str(author_id).strip()
+
+        # Validating the output format.
+        if out_format not in ['csv', 'json']:
+            raise InvalidParameterException('"out_format" must be one of "csv" and "json"')
+
+        # Validating the author ID.
+        if not self.validate_author_id(l):
+            raise InvalidAuthorIDException(l)
+
+        # Try to open the author's specific menu page.
+        url = self.URL_AUTHOR_BOOK.replace('%%%', l)
+        r = self._http_get_with_exception(url, author_id=author_id)
+
+        self.print('Begin scrapping author ID ' + l + '...', 2)
+
+        # Get the list of pagination.
+        c = html.fromstring(r.text)
+        try:
+            s = c.xpath('//div[@class="row"]/div[@class="col-6 text-right"]/small/i/text()')[0]
+            s = s.strip().split('|')[0].replace('Page', '').split('of')
+            page_to = int(s[1].strip())
+            self.print('Detected number of pages: ' + str(page_to), 2)
+
+        except IndexError:
+            # This actually means that the author does not have a record. But still...
+            self.print(f'Index error in attempting to read the pagination!', 2)
+            page_to = 1
+
+        # Preparing an empty list.
+        s1, s2, s3, s4, s5, s6, s7, s8, s9 = [], [], [], [], [], [], [], [], []
+
+        # Preparing the temporary URL.
+        new_url: str = str()
+
+        # Begin the scraping.
+        i = 0
+        while i < page_to:
+            i += 1
+            self.print(f'Scraping page: {i}...', 2)
+
+            # Opens the URL of this page.
+            new_url = url + '&page=' + str(i)
+            r = self._http_get_with_exception(new_url, author_id=author_id)
+            c = html.fromstring(r.text)
+
+            # The base tag.
+            base = '//div[@class="row"]/div[@class="col-12"]/table[@class="table"]//tr'
+            c_base = c.xpath(base)
+
+            for a in c_base:
+                # Title.
+                try:
+                    s1.append(a.xpath('.//td[2]/a/text()')[0].strip())
+                except IndexError:
+                    s1.append('')
+
+                # ISBN, author, publisher, page.
+                b = a.xpath('.//td[2]')[0]
+                x = self._book_heuristics_handler(b)
+                s2.append(x['isbn'].strip())
+                s3.append(x['author'].strip())
+                s4.append(x['publisher'].strip())
+                s5.append(x['page'].strip())
+
+                # Publish year.
+                try:
+                    s6.append(a.xpath('.//td[3]//strong[1]/text()')[0].strip())
+                except IndexError:
+                    s6.append('')
+
+                # Publish location.
+                try:
+                    s7.append(a.xpath('.//td[3]//strong[2]/text()')[0].strip())
+                except IndexError:
+                    s7.append('')
+
+                # Thumbnail (book's front cover image).
+                try:
+                    s8.append(a.xpath('.//td[1]/img/@src')[0].strip())
+                except IndexError:
+                    s8.append('')
+
+                # Url.
+                try:
+                    s9.append(a.xpath('.//td[2]/a/@href')[0].strip())
+                except IndexError:
+                    s9.append('')
+
+        self.print(
+            f'({len(s1)}, {len(s2)}, {len(s3)}, {len(s4)}, {len(s5)}, {len(s6)}, {len(s7)}, {len(s8)}, {len(s9)})', 2
+        )
+
+        if not len(s1) == len(s2) == len(s3) == len(s4) == len(s5) == len(s6) == len(s7) == len(s8) == len(s9):
+            raise MalformedDOMException(new_url)
+
+        # Forge the Python dict.
+        t = []
+        for j in range(len(s1)):
+            # Building the JSON dict.
+            u = {}
+
+            if '*' in fields or 'title' in fields:
+                u['title'] = s1[j]
+
+            if '*' in fields or 'isbn' in fields:
+                u['isbn'] = s2[j]
+
+            if '*' in fields or 'author' in fields:
+                u['author'] = s3[j]
+
+            if '*' in fields or 'publisher' in fields:
+                u['publisher'] = s4[j]
+
+            if '*' in fields or 'page' in fields:
+                u['page'] = s5[j]
+
+            if '*' in fields or 'year' in fields:
+                u['year'] = s6[j]
+
+            if '*' in fields or 'location' in fields:
+                u['location'] = s7[j]
+
+            if '*' in fields or 'thumbnail' in fields:
+                u['thumbnail'] = s8[j]
+
+            if '*' in fields or 'url' in fields:
+                u['url'] = s9[j]
+
+            t.append(u)
+
+        # Forge the pandas DataFrame object.
+        # Building the CSV dict.
+        d = {}
+        if '*' in fields or 'title' in fields:
+            d['title'] = s1
+
+        if '*' in fields or 'isbn' in fields:
+            d['isbn'] = s2
+
+        if '*' in fields or 'author' in fields:
+            d['author'] = s3
+
+        if '*' in fields or 'publisher' in fields:
+            d['publisher'] = s4
+
+        if '*' in fields or 'page' in fields:
+            d['page'] = s5
+
+        if '*' in fields or 'year' in fields:
+            d['year'] = s6
+
+        if '*' in fields or 'location' in fields:
+            d['location'] = s7
+
+        if '*' in fields or 'thumbnail' in fields:
+            d['thumbnail'] = s8
+
+        if '*' in fields or 'url' in fields:
+            d['url'] = s9
+
+        if out_format == 'json':
+            return t
+        elif out_format == 'csv':
+            return d
 
     # noinspection PyDefaultArgument
     def scrape_gscholar(self, author_id: str, out_format: str = 'json', fields: list = ['*']):

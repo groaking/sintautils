@@ -93,6 +93,55 @@ class AV(SintaScraper):
                 self.login()
 
     # noinspection PyDefaultArgument
+    def get_book(self, author_id: list = [], out_format: str = 'csv', fields: list = ['*']):
+        """ Performs the scraping of individual author's book data.
+
+        :param author_id: the list of author IDs to be scraped.
+        :param out_format: the format of the output result document.
+
+        Currently, the only supported formats are as follows:
+        - "csv"
+        - "json"
+
+        You can only specify one output format at a time.
+
+        :param fields: the types of field to be scraped.
+
+        Currently, the only supported fields are as follows:
+        - "*"
+        - "title"
+        - "isbn"
+        - "author"
+        - "publisher"
+        - "page"
+        - "year"
+        - "location"
+        - "thumbnail"
+        - "url"
+
+        You can input more than one field. For instance:
+        - ["title", "thumbnail"]
+        - ["isbn", "year", "thumbnail"]
+
+        Use asterisk in order to return all fields:
+        - ["*"]
+        """
+
+        if type(author_id) is str:
+            a = self.backend.scrape_book(author_id=str(author_id), out_format=out_format, fields=fields)
+
+        elif type(author_id) is list:
+            a = []
+            for l in author_id:
+                self.print(f'Scraping for author ID: {l}...', 2)
+                a.extend(self.backend.scrape_book(author_id=l, out_format=out_format, fields=fields))
+
+        else:
+            raise InvalidParameterException('You can only pass list or string into this function')
+
+        return a
+
+    # noinspection PyDefaultArgument
     def get_gscholar(self, author_id: list = [], out_format: str = 'csv', fields: list = ['*']):
         """ Performs the scraping of individual author's Google Scholar data.
 
