@@ -33,6 +33,7 @@ scraper = AV('admin@university.edu', 'password1234', autologin=True)
 - [ ] Add scopus, research and comm. service sync per author.
 - [X] Add scraper for IPR and book of each author.
 - [X] Add garuda scraper per author.
+- [ ] Add author info dumper.
 
 ### B.2. Bug Fixes
 
@@ -40,7 +41,7 @@ scraper = AV('admin@university.edu', 'password1234', autologin=True)
 
 ### B.3. Improvements
 
-- [ ] Bulk scraping of author list: return a dict with each author ID as key instead of just a plain list.
+- [X] Bulk scraping of author list: return a dict with each author ID as key instead of just a plain list.
 - [X] Move `_scrape_scopus`, `_scrape_wos` etc. functions to `backend.py`.
 
 ## C. License Notice

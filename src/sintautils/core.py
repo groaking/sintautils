@@ -131,10 +131,10 @@ class AV(SintaScraper):
             a = self.backend.scrape_book(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
-            a = []
+            a = {}
             for l in author_id:
-                self.print(f'Scraping for author ID: {l}...', 2)
-                a.extend(self.backend.scrape_book(author_id=l, out_format=out_format, fields=fields))
+                self.print(f'Scraping for author ID: {l}...', 1)
+                a[l] = self.backend.scrape_book(author_id=l, out_format=out_format, fields=fields)
 
         else:
             raise InvalidParameterException('You can only pass list or string into this function')
@@ -179,10 +179,10 @@ class AV(SintaScraper):
             a = self.backend.scrape_garuda(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
-            a = []
+            a = {}
             for l in author_id:
-                self.print(f'Scraping for author ID: {l}...', 2)
-                a.extend(self.backend.scrape_garuda(author_id=l, out_format=out_format, fields=fields))
+                self.print(f'Scraping for author ID: {l}...', 1)
+                a[l] = self.backend.scrape_garuda(author_id=l, out_format=out_format, fields=fields)
 
         else:
             raise InvalidParameterException('You can only pass list or string into this function')
@@ -225,10 +225,10 @@ class AV(SintaScraper):
             a = self.backend.scrape_gscholar(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
-            a = []
+            a = {}
             for l in author_id:
-                self.print(f'Scraping for author ID: {l}...', 2)
-                a.extend(self.backend.scrape_gscholar(author_id=l, out_format=out_format, fields=fields))
+                self.print(f'Scraping for author ID: {l}...', 1)
+                a[l] = self.backend.scrape_gscholar(author_id=l, out_format=out_format, fields=fields)
 
         else:
             raise InvalidParameterException('You can only pass list or string into this function')
@@ -272,10 +272,10 @@ class AV(SintaScraper):
             a = self.backend.scrape_ipr(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
-            a = []
+            a = {}
             for l in author_id:
-                self.print(f'Scraping for author ID: {l}...', 2)
-                a.extend(self.backend.scrape_ipr(author_id=l, out_format=out_format, fields=fields))
+                self.print(f'Scraping for author ID: {l}...', 1)
+                a[l] = self.backend.scrape_ipr(author_id=l, out_format=out_format, fields=fields)
 
         else:
             raise InvalidParameterException('You can only pass list or string into this function')
@@ -319,10 +319,10 @@ class AV(SintaScraper):
             a = self.backend.scrape_research(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
-            a = []
+            a = {}
             for l in author_id:
-                self.print(f'Scraping for author ID: {l}...', 2)
-                a.extend(self.backend.scrape_research(author_id=l, out_format=out_format, fields=fields))
+                self.print(f'Scraping for author ID: {l}...', 1)
+                a[l] = self.backend.scrape_research(author_id=l, out_format=out_format, fields=fields)
 
         else:
             raise InvalidParameterException('You can only pass list or string into this function')
@@ -367,10 +367,10 @@ class AV(SintaScraper):
             a = self.backend.scrape_scopus(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
-            a = []
+            a = {}
             for l in author_id:
-                self.print(f'Scraping for author ID: {l}...', 2)
-                a.extend(self.backend.scrape_scopus(author_id=l, out_format=out_format, fields=fields))
+                self.print(f'Scraping for author ID: {l}...', 1)
+                a[l] = self.backend.scrape_scopus(author_id=l, out_format=out_format, fields=fields)
 
         else:
             raise InvalidParameterException('You can only pass list or string into this function')
@@ -414,10 +414,10 @@ class AV(SintaScraper):
             a = self.backend.scrape_service(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
-            a = []
+            a = {}
             for l in author_id:
-                self.print(f'Scraping for author ID: {l}...', 2)
-                a.extend(self.backend.scrape_service(author_id=l, out_format=out_format, fields=fields))
+                self.print(f'Scraping for author ID: {l}...', 1)
+                a[l] = self.backend.scrape_service(author_id=l, out_format=out_format, fields=fields)
 
         else:
             raise InvalidParameterException('You can only pass list or string into this function')
@@ -461,10 +461,10 @@ class AV(SintaScraper):
             a = self.backend.scrape_wos(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
-            a = []
+            a = {}
             for l in author_id:
-                self.print(f'Scraping for author ID: {l}...', 2)
-                a.extend(self.backend.scrape_wos(author_id=l, out_format=out_format, fields=fields))
+                self.print(f'Scraping for author ID: {l}...', 1)
+                a[l] = self.backend.scrape_wos(author_id=l, out_format=out_format, fields=fields)
 
         else:
             raise InvalidParameterException('You can only pass list or string into this function')
