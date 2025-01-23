@@ -32,6 +32,7 @@ class UtilBackEnd(object):
     """ The back-end of sintautils that contain static functions and methods. """
 
     URL_AUTHOR_BOOK = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=book'
+    URL_AUTHOR_GARUDA = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=garuda'
     URL_AUTHOR_GSCHOLAR = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=google'
     URL_AUTHOR_IPR = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=ipr'
     URL_AUTHOR_SCOPUS = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=scopus'
@@ -108,6 +109,57 @@ class UtilBackEnd(object):
         else:
             ret_dict['publisher'] = ''
             ret_dict['page'] = ''
+
+        return ret_dict
+
+    @staticmethod
+    def _garuda_heuristics_handler(el):
+        """ Determines whether a given DOM element contains parameters existing in the "Garuda" data.
+
+        :param el: the XPATH element as DOM object to consider for element detection.
+        :return: a dict of the following keys: "publisher", "author", "journal", and "doi".
+        """
+        ret_dict: dict = {}
+
+        # Scraping each <small> element.
+        try:
+            s1 = el.xpath('./small[1]/text()')[0]
+        except IndexError:
+            s1 = ''
+        try:
+            s2 = el.xpath('./small[2]/text()')[0]
+        except IndexError:
+            s2 = ''
+        try:
+            s3 = el.xpath('./small[3]/text()')[0]
+        except IndexError:
+            s3 = ''
+        try:
+            s4 = el.xpath('./small[4]/text()')[0]
+        except IndexError:
+            s4 = ''
+
+        # Carry out the heuristics.
+        a = ['DOI: ']
+        b = ['doi']
+        for i in range(len(a)):
+            lookup_word = a[i]
+            key = b[i]
+            if s1.__contains__(lookup_word):
+                ret_dict[key] = s1.replace(lookup_word, '')
+            elif s2.__contains__(lookup_word):
+                ret_dict[key] = s2.replace(lookup_word, '')
+            elif s3.__contains__(lookup_word):
+                ret_dict[key] = s3.replace(lookup_word, '')
+            elif s4.__contains__(lookup_word):
+                ret_dict[key] = s4.replace(lookup_word, '')
+            else:
+                ret_dict[key] = ''
+
+        # Special cases.
+        ret_dict['publisher'] = s1
+        ret_dict['author'] = s2
+        ret_dict['journal'] = s3
 
         return ret_dict
 
@@ -449,6 +501,178 @@ class UtilBackEnd(object):
 
         if '*' in fields or 'url' in fields:
             d['url'] = s9
+
+        if out_format == 'json':
+            return t
+        elif out_format == 'csv':
+            return d
+
+    # noinspection PyDefaultArgument
+    def scrape_garuda(self, author_id: str, out_format: str = 'json', fields: list = ['*']):
+        """ Scrape the Garuda journal information of one, and only one author in SINTA.
+        Returns a Python array/list of dictionaries.
+
+        The only supported out (return) formats are as follows:
+        - "json" (includes both dict and list)
+        - "csv" (stored as pandas DataFrame object)
+
+        The fields that will be returned are as follows:
+        - "*"
+        - "title"
+        - "publisher"
+        - "author"
+        - "journal"
+        - "doi"
+        - "year"
+        - "quartile"
+        - "url"
+        """
+        l: str = str(author_id).strip()
+
+        # Validating the output format.
+        if out_format not in ['csv', 'json']:
+            raise InvalidParameterException('"out_format" must be one of "csv" and "json"')
+
+        # Validating the author ID.
+        if not self.validate_author_id(l):
+            raise InvalidAuthorIDException(l)
+
+        # Try to open the author's specific menu page.
+        url = self.URL_AUTHOR_GARUDA.replace('%%%', l)
+        r = self._http_get_with_exception(url, author_id=author_id)
+
+        self.print('Begin scrapping author ID ' + l + '...', 2)
+
+        # Get the list of pagination.
+        c = html.fromstring(r.text)
+        try:
+            s = c.xpath('//div[@class="col-12"]/div[2]/div[2]/small/text()')[0]
+            s = s.strip().split('|')[0].replace('Page', '').split('of')
+            page_to = int(s[1].strip())
+            self.print('Detected number of pages: ' + str(page_to), 2)
+
+        except IndexError:
+            # This actually means that the author does not have a record. But still...
+            self.print(f'Index error in attempting to read the pagination!', 2)
+            page_to = 1
+
+        # Preparing an empty list.
+        s1, s2, s3, s4, s5, s6, s7, s8 = [], [], [], [], [], [], [], []
+
+        # Preparing the temporary URL.
+        new_url: str = str()
+
+        # Begin the scraping.
+        i = 0
+        while i < page_to:
+            i += 1
+            self.print(f'Scraping page: {i}...', 2)
+
+            # Opens the URL of this page.
+            new_url = url + '&page=' + str(i)
+            r = self._http_get_with_exception(new_url, author_id=author_id)
+            c = html.fromstring(r.text)
+
+            # The base tag.
+            base = '//div[@class="row"]/div[@class="col-12"]//table[@class="table"]//tr'
+            c_base = c.xpath(base)
+
+            for a in c_base:
+                # Title.
+                try:
+                    s1.append(a.xpath('.//td[2]/a/text()')[0].strip())
+                except IndexError:
+                    s1.append('')
+
+                # Publisher, author, journal name, and DOI.
+                b = a.xpath('.//td[2]')[0]
+                x = self._garuda_heuristics_handler(b)
+                s2.append(x['publisher'].strip())
+                s3.append(x['author'].strip())
+                s4.append(x['journal'].strip())
+                s5.append(x['doi'].strip())
+
+                # Year.
+                try:
+                    s6.append(a.xpath('.//td[3]//strong/text()')[0].strip())
+                except IndexError:
+                    s6.append('')
+
+                # Quartile.
+                try:
+                    s7.append(a.xpath('.//td[1]/div/text()')[0].strip())
+                except IndexError:
+                    s7.append('')
+
+                # Url.
+                try:
+                    s8.append(a.xpath('.//td[2]/a/@href')[0].strip())
+                except IndexError:
+                    s8.append('')
+
+        self.print(f'({len(s1)}, {len(s2)}, {len(s3)}, {len(s4)}, {len(s5)}, {len(s6)}, {len(s7)}, {len(s8)})', 2)
+
+        if not len(s1) == len(s2) == len(s3) == len(s4) == len(s5) == len(s6) == len(s7) == len(s8):
+            raise MalformedDOMException(new_url)
+
+        # Forge the Python dict.
+        t = []
+        for j in range(len(s1)):
+            # Building the JSON dict.
+            u = {}
+
+            if '*' in fields or 'title' in fields:
+                u['title'] = s1[j]
+
+            if '*' in fields or 'publisher' in fields:
+                u['publisher'] = s2[j]
+
+            if '*' in fields or 'author' in fields:
+                u['author'] = s3[j]
+
+            if '*' in fields or 'journal' in fields:
+                u['journal'] = s4[j]
+
+            if '*' in fields or 'doi' in fields:
+                u['doi'] = s5[j]
+
+            if '*' in fields or 'year' in fields:
+                u['year'] = s6[j]
+
+            if '*' in fields or 'quartile' in fields:
+                u['quartile'] = s7[j]
+
+            if '*' in fields or 'url' in fields:
+                u['url'] = s8[j]
+
+            t.append(u)
+
+        # Forge the pandas DataFrame object.
+        # Building the CSV dict.
+        d = {}
+        if '*' in fields or 'title' in fields:
+            d['title'] = s1
+
+        if '*' in fields or 'publisher' in fields:
+            d['publisher'] = s2
+
+        if '*' in fields or 'author' in fields:
+            d['author'] = s3
+
+        if '*' in fields or 'journal' in fields:
+            d['journal'] = s4
+
+        if '*' in fields or 'doi' in fields:
+            d['doi'] = s5
+
+        if '*' in fields or 'year' in fields:
+            d['year'] = s6
+
+        if '*' in fields or 'quartile' in fields:
+            d['quartile'] = s7
+
+        if '*' in fields or 'url' in fields:
+            d['url'] = s8
 
         if out_format == 'json':
             return t
