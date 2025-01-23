@@ -33,7 +33,8 @@ scraper = AV('admin@university.edu', 'password1234', autologin=True)
 - [ ] Add scopus, research and comm. service sync per author.
 - [X] Add scraper for IPR and book of each author.
 - [X] Add garuda scraper per author.
-- [ ] Add author info dumper.
+- [X] Add author info dumper.
+- [ ] Add author info dumper using `openpyxl` implementation that outputs to an Excel/spreadsheet workbook file.
 
 ### B.2. Bug Fixes
 

@@ -21,9 +21,13 @@ for more details.
 You should have received a copy of the GNU General Public License along
 with sintautils. If not, see <https://www.gnu.org/licenses/>.
 """
-
+import copy
 from datetime import datetime as dt
+import json
+from openpyxl import Workbook
+import os
 import requests as rq
+import time
 
 from .exceptions import InvalidLoginCredentialException
 from .exceptions import InvalidParameterException
@@ -91,6 +95,168 @@ class AV(SintaScraper):
 
             if autologin:
                 self.login()
+
+    # noinspection PyDefaultArgument,PyTypeChecker
+    def _get_dump(self, author_id: str, fields: list = ['*']):
+        """ This function actually gets the dump information requested by the function `dump_author()`.
+
+        :param author_id: the author ID of one, and only one author.
+        :param fields: the kind of dump information to be returned.
+        :return: a dict that corresponds to the data fields requested.
+
+        The return dict, if specified in the `fields` parameter, will have the following keys:
+        - "book"
+        - "garuda"
+        - "gscholar"
+        - "ipr"
+        - "research"
+        - "scopus"
+        - "service"
+        - "wos"
+        """
+        ret_dict = {}
+
+        if type(author_id) is not str:
+            raise NonStringParameterException()
+
+        if '*' in fields or 'book' in fields:
+            self.print('Obtaining book data...', 0)
+            ret_dict['book'] = self.get_book(author_id, out_format='json')
+
+        if '*' in fields or 'garuda' in fields:
+            self.print('Obtaining garuda data...', 0)
+            ret_dict['garuda'] = self.get_garuda(author_id, out_format='json')
+
+        if '*' in fields or 'gscholar' in fields:
+            self.print('Obtaining gscholar data...', 0)
+            ret_dict['gscholar'] = self.get_gscholar(author_id, out_format='json')
+
+        if '*' in fields or 'ipr' in fields:
+            self.print('Obtaining ipr data...', 0)
+            ret_dict['ipr'] = self.get_ipr(author_id, out_format='json')
+
+        if '*' in fields or 'research' in fields:
+            self.print('Obtaining research data...', 0)
+            ret_dict['research'] = self.get_research(author_id, out_format='json')
+
+        if '*' in fields or 'scopus' in fields:
+            self.print('Obtaining scopus data...', 0)
+            ret_dict['scopus'] = self.get_scopus(author_id, out_format='json')
+
+        if '*' in fields or 'service' in fields:
+            self.print('Obtaining service data...', 0)
+            ret_dict['service'] = self.get_service(author_id, out_format='json')
+
+        if '*' in fields or 'wos' in fields:
+            self.print('Obtaining wos data...', 0)
+            ret_dict['wos'] = self.get_wos(author_id, out_format='json')
+
+        return ret_dict
+
+    # noinspection PyDefaultArgument
+    def dump_author(
+            self,
+            author_id: list = [],
+            out_folder: str = os.getcwd(),
+            out_prefix: str = 'sintautils_dump_author-',
+            out_format: str = 'xlsx',
+            fields: list = ['*']
+    ):
+        """ Performs the scraping of an author's all-information data, and save it as a file.
+
+        :param author_id: the list of author IDs to be scraped.
+        :param out_folder: the output folder to which all scraping result files will be saved. Defaults to the current working directory.
+        :param out_prefix: the prefix file name into which the scraping result(s) will be saved. The default output filename prefix is "sintautils_dump_author-".
+
+        :param out_format: the format of the output result document.
+
+        Currently, the only supported formats are as follows:
+        - "csv"
+        - "json"
+        - "json-pretty"
+        - "xlsx"
+
+        :param fields: the types of scraping data to be scraped.
+
+        Currently, the only supported fields are as follows:
+        - "*"
+        - "book"
+        - "garuda"
+        - "gscholar"
+        - "ipr"
+        - "research"
+        - "scopus"
+        - "service"
+        - "wos"
+
+        You can input more than one field. For instance:
+        - ["gscholar", "scopus"]
+        - ["wos", "research", "scopus"]
+
+        Use asterisk in order to return all fields:
+        - ["*"]
+        """
+
+        # Validating the output format.
+        if type(out_format) is not str or out_format not in ['csv', 'json', 'xlsx']:
+            raise InvalidParameterException('"out_format" must be one of "csv", "json", and "xlsx"')
+
+        # This local function carries out the actual dumping of author data.
+        def dump(dump_id):
+            a: dict = self._get_dump(dump_id, fields=fields)
+            if out_format == 'csv':
+                for m in a.keys():
+                    with open(str(out_folder) + os.sep + str(out_prefix) + str(dump_id) + '-' + m + '.csv', 'w') as fo:
+                        b: list = a[m]
+
+                        # Length validation.
+                        if b.__len__() < 1:
+                            continue
+
+                        # Write the CSV header.
+                        headers: str = str()
+                        for n in b[0].keys():
+                            headers += f'"{n}",'
+                        fo.write(headers[:-1] + '\n')
+
+                        # Write the content.
+                        for n in b:
+                            n: dict = n
+                            rows: str = str()
+                            for c in n.keys():
+                                rows += f'"{n[c]}",'
+                            fo.write(rows[:-1] + '\n')
+
+            elif out_format == 'json' or out_format == 'json-pretty':
+                b: dict = {
+                    'data': {
+                        'author_id': dump_id,
+                        'scraping_date': int(time.time()),
+                        'scraping_result': copy.deepcopy(a)
+                    }
+                }
+
+                # Saving the JSON file.
+                with open(str(out_folder) + os.sep + str(out_prefix) + str(dump_id) + '.json', 'w') as fo:
+                    if out_format == 'json-pretty':
+                        json.dump(b, fo, indent=4)
+                    else:
+                        json.dump(b, fo)
+
+            elif out_format == 'xlsx':
+                # TODO: Work on the implementation of xlsx dumper using openpyxl.
+                pass
+
+        if type(author_id) is str:
+            dump(dump_id=author_id)
+
+        elif type(author_id) is list:
+            for l in author_id:
+                self.print(f'Dumping author data for author ID: {l}...', 0)
+                dump(dump_id=l)
+
+        else:
+            raise InvalidParameterException('You can only pass list or string into this function')
 
     # noinspection PyDefaultArgument
     def get_book(self, author_id: list = [], out_format: str = 'csv', fields: list = ['*']):
