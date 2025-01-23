@@ -401,7 +401,7 @@ class UtilBackEnd(object):
                 # ISBN, author, publisher, page.
                 b = a.xpath('.//td[2]')[0]
                 x = self._book_heuristics_handler(b)
-                s2.append(x['isbn'].strip())
+                s2.append(x['isbn'].replace('|', '').strip())
                 s3.append(x['author'].strip())
                 s4.append(x['publisher'].strip())
                 s5.append(x['page'].strip())
