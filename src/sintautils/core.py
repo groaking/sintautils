@@ -29,6 +29,7 @@ import os
 import requests as rq
 import time
 
+from .exceptions import EmptyFieldException
 from .exceptions import InvalidLoginCredentialException
 from .exceptions import InvalidParameterException
 from .exceptions import NoLoginCredentialsException
@@ -197,6 +198,10 @@ class AV(SintaScraper):
         - ["*"]
         """
 
+        # Validating the fields.
+        if fields.__len__() < 1:
+            raise EmptyFieldException('book, garuda, gscholar, ipr, research, scopus, service, wos')
+
         # Validating the output format.
         if type(out_format) is not str or out_format not in ['csv', 'json', 'xlsx']:
             raise InvalidParameterException('"out_format" must be one of "csv", "json", and "xlsx"')
@@ -244,8 +249,36 @@ class AV(SintaScraper):
                         json.dump(b, fo)
 
             elif out_format == 'xlsx':
-                # TODO: Work on the implementation of xlsx dumper using openpyxl.
-                pass
+                wb = Workbook()
+                for m in sorted(a.keys()):
+                    ws = wb.create_sheet(m, -1)
+
+                    # Obtaining the data list and validate the data length.
+                    b: list = a[m]
+                    if b.__len__() < 1:
+                        continue
+
+                    # Write the spreadsheet header.
+                    headers: list = list(b[0].keys())
+                    for i in range(len(headers)):
+                        n = headers[i]
+                        ws.cell(row=1, column=(i + 1), value=n)
+
+                        # Write the column's content.
+                        for j in range(len(b)):
+                            c: dict = b[j]
+                            # Offset the row number by two, because the first row is header.
+                            ws.cell(row=(j + 2), column=(i + 1), value=c[n])
+
+                # Remove sheets that do not represent data type.
+                if wb.sheetnames.__len__() > 0:
+                    for d in wb.sheetnames:
+                        if d not in a.keys():
+                            wb.remove(wb[d])
+
+                # Saving the spreadsheet.
+                save_file = str(out_folder) + os.sep + str(out_prefix) + str(dump_id) + '.xlsx'
+                wb.save(save_file)
 
         if type(author_id) is str:
             dump(dump_id=author_id)

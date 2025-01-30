@@ -39,6 +39,18 @@ class AuthorIDNotFoundException(SintaException):
     __str__ = __repr__
 
 
+class EmptyFieldException(SintaException):
+    """ Error raised when there is no field selection in the scraper function passed. """
+
+    def __init__(self, arg: str = ''):
+        self.arg = arg
+
+    def __repr__(self):
+        return f'You must specify at least one of the following fields: {self.arg}. Use "*" to select all fields.'
+
+    __str__ = __repr__
+
+
 class InvalidAuthorIDException(SintaException):
     """ Error raised when the user specifies an invalid (i.e., non-numerical) author ID. """
 
