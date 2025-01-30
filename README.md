@@ -1,6 +1,6 @@
 # sintautils
 
-Python utility package for scraping information on SINTA (Science and Technology Index)
+Python utility package for retrieving and synchronizing data on [SINTA (Science and Technology Index)](https://sinta.kemdikbud.go.id)
 
 ## A. Documentation
 
