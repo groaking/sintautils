@@ -680,3 +680,136 @@ class AV(SintaScraper):
             self.print('Login successful!', 1)
         else:
             raise InvalidLoginCredentialException()
+
+    # noinspection PyDefaultArgument
+    def sync_dikti(self, author_id: list = []):
+        """ Performs the syncing of an author's PD-DIKTI profile data.
+        :param author_id: the list of author IDs to be synced.
+        :return: nothing.
+        """
+
+        if type(author_id) is str:
+            a = self.backend.sync_dikti(author_id=str(author_id))
+
+        elif type(author_id) is list:
+            a = {}
+            for l in author_id:
+                self.print(f'Syncing author ID: {l}...', 1)
+                a[l] = self.backend.sync_dikti(author_id=l)
+
+        else:
+            raise InvalidParameterException('You can only pass list or string into this function')
+
+    # noinspection PyDefaultArgument
+    def sync_garuda(self, author_id: list = []):
+        """ Performs the syncing of an author's Garuda data.
+        :param author_id: the list of author IDs to be synced.
+        :return: nothing.
+        """
+
+        if type(author_id) is str:
+            a = self.backend.sync_garuda(author_id=str(author_id))
+
+        elif type(author_id) is list:
+            a = {}
+            for l in author_id:
+                self.print(f'Syncing author ID: {l}...', 1)
+                a[l] = self.backend.sync_garuda(author_id=l)
+
+        else:
+            raise InvalidParameterException('You can only pass list or string into this function')
+
+    # noinspection PyDefaultArgument
+    def sync_gscholar(self, author_id: list = []):
+        """ Performs the syncing of an author's Google Scholar data.
+        :param author_id: the list of author IDs to be synced.
+        :return: nothing.
+        """
+
+        if type(author_id) is str:
+            a = self.backend.sync_gscholar(author_id=str(author_id))
+
+        elif type(author_id) is list:
+            a = {}
+            for l in author_id:
+                self.print(f'Syncing author ID: {l}...', 1)
+                a[l] = self.backend.sync_gscholar(author_id=l)
+
+        else:
+            raise InvalidParameterException('You can only pass list or string into this function')
+
+    # noinspection PyDefaultArgument
+    def sync_research(self, author_id: list = []):
+        """ Performs the syncing of an author's research data.
+        :param author_id: the list of author IDs to be synced.
+        :return: nothing.
+        """
+
+        if type(author_id) is str:
+            a = self.backend.sync_research(author_id=str(author_id))
+
+        elif type(author_id) is list:
+            a = {}
+            for l in author_id:
+                self.print(f'Syncing author ID: {l}...', 1)
+                a[l] = self.backend.sync_research(author_id=l)
+
+        else:
+            raise InvalidParameterException('You can only pass list or string into this function')
+
+    # noinspection PyDefaultArgument
+    def sync_scopus(self, author_id: list = []):
+        """ Performs the syncing of an author's Scopus data.
+        :param author_id: the list of author IDs to be synced.
+        :return: nothing.
+        """
+
+        if type(author_id) is str:
+            a = self.backend.sync_scopus(author_id=str(author_id))
+
+        elif type(author_id) is list:
+            a = {}
+            for l in author_id:
+                self.print(f'Syncing author ID: {l}...', 1)
+                a[l] = self.backend.sync_scopus(author_id=l)
+
+        else:
+            raise InvalidParameterException('You can only pass list or string into this function')
+
+    # noinspection PyDefaultArgument
+    def sync_service(self, author_id: list = []):
+        """ Performs the syncing of an author's community services data.
+        :param author_id: the list of author IDs to be synced.
+        :return: nothing.
+        """
+
+        if type(author_id) is str:
+            a = self.backend.sync_service(author_id=str(author_id))
+
+        elif type(author_id) is list:
+            a = {}
+            for l in author_id:
+                self.print(f'Syncing author ID: {l}...', 1)
+                a[l] = self.backend.sync_service(author_id=l)
+
+        else:
+            raise InvalidParameterException('You can only pass list or string into this function')
+
+    # noinspection PyDefaultArgument
+    def sync_wos(self, author_id: list = []):
+        """ Performs the syncing of an author's Web of Science (WOS) publication data.
+        :param author_id: the list of author IDs to be synced.
+        :return: nothing.
+        """
+
+        if type(author_id) is str:
+            a = self.backend.sync_wos(author_id=str(author_id))
+
+        elif type(author_id) is list:
+            a = {}
+            for l in author_id:
+                self.print(f'Syncing author ID: {l}...', 1)
+                a[l] = self.backend.sync_wos(author_id=l)
+
+        else:
+            raise InvalidParameterException('You can only pass list or string into this function')

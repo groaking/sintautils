@@ -31,14 +31,24 @@ from .exceptions import InvalidParameterException, InvalidAuthorIDException, \
 class UtilBackEnd(object):
     """ The back-end of sintautils that contain static functions and methods. """
 
-    URL_AUTHOR_BOOK = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=book'
-    URL_AUTHOR_GARUDA = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=garuda'
-    URL_AUTHOR_GSCHOLAR = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=google'
-    URL_AUTHOR_IPR = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=ipr'
-    URL_AUTHOR_SCOPUS = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=scopus'
-    URL_AUTHOR_RESEARCH = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=research'
-    URL_AUTHOR_SERVICE = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=service'
-    URL_AUTHOR_WOS = 'https://sinta.kemdikbud.go.id/authorverification/author/profile/%%%?view=wos'
+    URL_AV_HOME = 'https://sinta.kemdikbud.go.id/authorverification'
+
+    URL_AUTHOR_BOOK = f'{URL_AV_HOME}/author/profile/%%%?view=book'
+    URL_AUTHOR_GARUDA = f'{URL_AV_HOME}/author/profile/%%%?view=garuda'
+    URL_AUTHOR_GSCHOLAR = f'{URL_AV_HOME}/author/profile/%%%?view=google'
+    URL_AUTHOR_IPR = f'{URL_AV_HOME}/author/profile/%%%?view=ipr'
+    URL_AUTHOR_SCOPUS = f'{URL_AV_HOME}/author/profile/%%%?view=scopus'
+    URL_AUTHOR_RESEARCH = f'{URL_AV_HOME}/author/profile/%%%?view=research'
+    URL_AUTHOR_SERVICE = f'{URL_AV_HOME}/author/profile/%%%?view=service'
+    URL_AUTHOR_WOS = f'{URL_AV_HOME}/author/profile/%%%?view=wos'
+
+    URL_SYNC_DIKTI = f'{URL_AV_HOME}/author/updatedata/%%%?redirect={URL_AV_HOME}&act=update_pddikti'
+    URL_SYNC_GARUDA = f'{URL_AV_HOME}/author/syncData/%%%?redirect={URL_AV_HOME}&act=garudaSync'
+    URL_SYNC_GSCHOLAR = f'{URL_AV_HOME}/author/syncData/%%%?redirect={URL_AV_HOME}&act=googleSync'
+    URL_SYNC_RESEARCH = f'{URL_AV_HOME}/author/syncData/%%%?redirect={URL_AV_HOME}&act=researchSync'
+    URL_SYNC_SCOPUS = f'{URL_AV_HOME}/author/syncData/%%%?redirect={URL_AV_HOME}&act=scopusSync'
+    URL_SYNC_SERVICE = f'{URL_AV_HOME}/author/syncData/%%%?redirect={URL_AV_HOME}&act=serviceSync'
+    URL_SYNC_WOS = f'{URL_AV_HOME}/author/syncData/%%%?redirect={URL_AV_HOME}&act=wosSync'
 
     def __init__(self, requests_session: Session, logger: ()):
         super().__init__()
@@ -1713,3 +1723,52 @@ class UtilBackEnd(object):
             return t
         elif out_format == 'csv':
             return d
+
+    def sync_dikti(self, author_id: str):
+        """ Sync an author's PD-DIKTI profiles data. """
+        self._http_get_with_exception(
+            self.URL_SYNC_DIKTI.replace('%%%', author_id),
+            author_id
+        )
+
+    def sync_garuda(self, author_id: str):
+        """ Sync an author's garuda publication data. """
+        self._http_get_with_exception(
+            self.URL_SYNC_GARUDA.replace('%%%', author_id),
+            author_id
+        )
+
+    def sync_gscholar(self, author_id: str):
+        """ Sync an author's Google Scholar publication data. """
+        self._http_get_with_exception(
+            self.URL_SYNC_GSCHOLAR.replace('%%%', author_id),
+            author_id
+        )
+
+    def sync_research(self, author_id: str):
+        """ Sync an author's research data. """
+        self._http_get_with_exception(
+            self.URL_SYNC_RESEARCH.replace('%%%', author_id),
+            author_id
+        )
+
+    def sync_scopus(self, author_id: str):
+        """ Sync an author's Scopus publication data. """
+        self._http_get_with_exception(
+            self.URL_SYNC_SCOPUS.replace('%%%', author_id),
+            author_id
+        )
+
+    def sync_service(self, author_id: str):
+        """ Sync an author's community service data. """
+        self._http_get_with_exception(
+            self.URL_SYNC_SERVICE.replace('%%%', author_id),
+            author_id
+        )
+
+    def sync_wos(self, author_id: str):
+        """ Sync an author's Web of Science (WOS) publication data. """
+        self._http_get_with_exception(
+            self.URL_SYNC_WOS.replace('%%%', author_id),
+            author_id
+        )

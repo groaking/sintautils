@@ -1,5 +1,13 @@
 # `sintautils` Project Change Log
 
+## Next release
+
+:star2: **NEW**
+
+- Added PDDIKTI profile data synchronizer
+- Added BIMA research and community service data synchronizer
+- Added Garuda, Google Scholar, Scopus, and Web of Science (WOS) data synchronizer
+
 ## v0.0.1 2025.01.30 (1)
 
 :information_source: **INFO**

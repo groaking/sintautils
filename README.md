@@ -65,12 +65,40 @@ scraper.dump_author('1234',
 
 If multiple fields are specified when using `out_format=csv`, each data type will be saved as a separate CSV file under the same `out_folder` directory.
 
+#### A.2.iii. Author Data Synchronization
+
+Using `sintautils`, you can programmatically sync author publication and profile data using OOP-style commands. Below are some examples to sync author data:
+
+```python
+# Sync Google Scholar publication data.
+scraper.sync_gscholar(author_id='1234')
+
+# Sync multiple author IDs at once.
+scraper.sync_gscholar(author_id=['1234', '5678'])
+```
+
+To sync an author's profile information with the information stored in [DIKTI's data center](https://pddikti.kemdiktisaintek.go.id/), use the following command:
+
+- `scraper.sync_dikti(author_id=...)`
+
+To sync an author's specific publication type (Garuda, Google Scholar, Scopus, and Web of Science), use the following command:
+
+- `scraper.sync_garuda(author_id=...)`
+- `scraper.sync_gscholar(author_id=...)`
+- `scraper.sync_scopus(author_id=...)`
+- `scraper.sync_wos(author_id=...)`
+
+Also, you can sync an author's research and community service data with the information stored in [BIMA's data center](https://bima.kemdikbud.go.id/) as follows:
+
+- `scraper.sync_research(author_id=...)`
+- `scraper.sync_service(author_id=...)`
+
 ## B. To-Do
 
 ### B.1. New Features
 
 - [X] Add scopus, comm. service, and research scraper of each author.
-- [ ] Add scopus, research and comm. service sync per author.
+- [X] Add scopus, research and comm. service sync per author.
 - [X] Add scraper for IPR and book of each author.
 - [X] Add garuda scraper per author.
 - [X] Add author info dumper.
