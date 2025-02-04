@@ -97,6 +97,8 @@ Also, you can sync an author's research and community service data with the info
 
 ### B.1. New Features
 
+**v0.0.1**
+
 - [X] Add scopus, comm. service, and research scraper of each author.
 - [X] Add scopus, research and comm. service sync per author.
 - [X] Add scraper for IPR and book of each author.
@@ -104,14 +106,28 @@ Also, you can sync an author's research and community service data with the info
 - [X] Add author info dumper.
 - [X] Add author info dumper using `openpyxl` implementation that outputs to an Excel/spreadsheet workbook file.
 
+**v0.0.2**
+
+- [ ] Add non-AV SINTA login mechanism.
+- [ ] Add non-AV SINTA study programs data scraper.
+- [ ] Add non-AV SINTA authors data scraper.
+
 ### B.2. Bug Fixes
+
+**v0.0.1**
 
 - [X] Google Scholar scraper: no publication case.
 
 ### B.3. Improvements
 
+**v0.0.1**
+
 - [X] Bulk scraping of author list: return a dict with each author ID as key instead of just a plain list.
 - [X] Move `_scrape_scopus`, `_scrape_wos` etc. functions to `backend.py`.
+
+**v0.0.2**
+
+- [ ] Add the functionality to inflate bulk-scraping of multiple authors into a single XLSX file.
 
 ## C. License Notice
 
