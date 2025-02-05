@@ -12,6 +12,7 @@
 
 - Implemented timeout flag in the `requests` HTTP requests.
 - Implemented `str()` cast for integer inputs in `author_id` parameters.
+- Removed duplicate author ID from list arguments in the scraper/syncer functions.
 
 ## v0.0.1 2025.01.30 (1)
 

@@ -287,12 +287,20 @@ class AV(SintaScraper):
             dump(dump_id=str(author_id))
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             for l in author_id:
                 self.print(f'Dumping author data for author ID: {l}...', 0)
-                dump(dump_id=l)
+                dump(dump_id=str(l))
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
     # noinspection PyDefaultArgument
     def get_book(self, author_id: list = [], out_format: str = 'csv', fields: list = ['*']):
@@ -333,13 +341,21 @@ class AV(SintaScraper):
             a = self.backend.scrape_book(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Scraping for author ID: {l}...', 1)
-                a[l] = self.backend.scrape_book(author_id=l, out_format=out_format, fields=fields)
+                a[l] = self.backend.scrape_book(author_id=str(l), out_format=out_format, fields=fields)
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
         return a
 
@@ -381,13 +397,21 @@ class AV(SintaScraper):
             a = self.backend.scrape_garuda(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Scraping for author ID: {l}...', 1)
-                a[l] = self.backend.scrape_garuda(author_id=l, out_format=out_format, fields=fields)
+                a[l] = self.backend.scrape_garuda(author_id=str(l), out_format=out_format, fields=fields)
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
         return a
 
@@ -427,13 +451,21 @@ class AV(SintaScraper):
             a = self.backend.scrape_gscholar(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Scraping for author ID: {l}...', 1)
-                a[l] = self.backend.scrape_gscholar(author_id=l, out_format=out_format, fields=fields)
+                a[l] = self.backend.scrape_gscholar(author_id=str(l), out_format=out_format, fields=fields)
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
         return a
 
@@ -474,13 +506,21 @@ class AV(SintaScraper):
             a = self.backend.scrape_ipr(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Scraping for author ID: {l}...', 1)
-                a[l] = self.backend.scrape_ipr(author_id=l, out_format=out_format, fields=fields)
+                a[l] = self.backend.scrape_ipr(author_id=str(l), out_format=out_format, fields=fields)
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
         return a
 
@@ -521,13 +561,21 @@ class AV(SintaScraper):
             a = self.backend.scrape_research(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Scraping for author ID: {l}...', 1)
-                a[l] = self.backend.scrape_research(author_id=l, out_format=out_format, fields=fields)
+                a[l] = self.backend.scrape_research(author_id=str(l), out_format=out_format, fields=fields)
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
         return a
 
@@ -569,13 +617,21 @@ class AV(SintaScraper):
             a = self.backend.scrape_scopus(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Scraping for author ID: {l}...', 1)
-                a[l] = self.backend.scrape_scopus(author_id=l, out_format=out_format, fields=fields)
+                a[l] = self.backend.scrape_scopus(author_id=str(l), out_format=out_format, fields=fields)
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
         return a
 
@@ -616,13 +672,21 @@ class AV(SintaScraper):
             a = self.backend.scrape_service(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Scraping for author ID: {l}...', 1)
-                a[l] = self.backend.scrape_service(author_id=l, out_format=out_format, fields=fields)
+                a[l] = self.backend.scrape_service(author_id=str(l), out_format=out_format, fields=fields)
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
         return a
 
@@ -663,13 +727,21 @@ class AV(SintaScraper):
             a = self.backend.scrape_wos(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Scraping for author ID: {l}...', 1)
-                a[l] = self.backend.scrape_wos(author_id=l, out_format=out_format, fields=fields)
+                a[l] = self.backend.scrape_wos(author_id=str(l), out_format=out_format, fields=fields)
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
         return a
 
@@ -695,13 +767,21 @@ class AV(SintaScraper):
             a = self.backend.sync_dikti(author_id=str(author_id))
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Syncing author ID: {l}...', 1)
-                a[l] = self.backend.sync_dikti(author_id=l)
+                a[l] = self.backend.sync_dikti(author_id=str(l))
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
     # noinspection PyDefaultArgument
     def sync_garuda(self, author_id: list = []):
@@ -714,13 +794,21 @@ class AV(SintaScraper):
             a = self.backend.sync_garuda(author_id=str(author_id))
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Syncing author ID: {l}...', 1)
-                a[l] = self.backend.sync_garuda(author_id=l)
+                a[l] = self.backend.sync_garuda(author_id=str(l))
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
     # noinspection PyDefaultArgument
     def sync_gscholar(self, author_id: list = []):
@@ -733,13 +821,21 @@ class AV(SintaScraper):
             a = self.backend.sync_gscholar(author_id=str(author_id))
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Syncing author ID: {l}...', 1)
-                a[l] = self.backend.sync_gscholar(author_id=l)
+                a[l] = self.backend.sync_gscholar(author_id=str(l))
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
     # noinspection PyDefaultArgument
     def sync_research(self, author_id: list = []):
@@ -752,13 +848,21 @@ class AV(SintaScraper):
             a = self.backend.sync_research(author_id=str(author_id))
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Syncing author ID: {l}...', 1)
-                a[l] = self.backend.sync_research(author_id=l)
+                a[l] = self.backend.sync_research(author_id=str(l))
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
     # noinspection PyDefaultArgument
     def sync_scopus(self, author_id: list = []):
@@ -771,13 +875,21 @@ class AV(SintaScraper):
             a = self.backend.sync_scopus(author_id=str(author_id))
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Syncing author ID: {l}...', 1)
-                a[l] = self.backend.sync_scopus(author_id=l)
+                a[l] = self.backend.sync_scopus(author_id=str(l))
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
     # noinspection PyDefaultArgument
     def sync_service(self, author_id: list = []):
@@ -790,13 +902,21 @@ class AV(SintaScraper):
             a = self.backend.sync_service(author_id=str(author_id))
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Syncing author ID: {l}...', 1)
-                a[l] = self.backend.sync_service(author_id=l)
+                a[l] = self.backend.sync_service(author_id=str(l))
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
 
     # noinspection PyDefaultArgument
     def sync_wos(self, author_id: list = []):
@@ -809,10 +929,18 @@ class AV(SintaScraper):
             a = self.backend.sync_wos(author_id=str(author_id))
 
         elif type(author_id) is list:
+            # Remove duplicates.
+            author_id = list(dict.fromkeys(author_id))
+
+            # Validating individual item type.
+            for l in author_id:
+                if type(l) not in (str, int):
+                    raise InvalidParameterException('You can only pass list, string, or integer into this function')
+
             a = {}
             for l in author_id:
                 self.print(f'Syncing author ID: {l}...', 1)
-                a[l] = self.backend.sync_wos(author_id=l)
+                a[l] = self.backend.sync_wos(author_id=str(l))
 
         else:
-            raise InvalidParameterException('You can only pass list or string into this function')
+            raise InvalidParameterException('You can only pass list, string, or integer into this function')
