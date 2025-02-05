@@ -128,6 +128,9 @@ Also, you can sync an author's research and community service data with the info
 **v0.0.2**
 
 - [ ] Add the functionality to inflate bulk-scraping of multiple authors into a single XLSX file.
+- [X] Add `str()` cast in the SINTA ID parameter, especially in `dump_author()`.
+- [X] Extend the `requests` timeout duration.
+- [ ] Remove duplicates from the SINTA ID parameter.
 
 ## C. License Notice
 

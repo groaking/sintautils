@@ -50,10 +50,11 @@ class UtilBackEnd(object):
     URL_SYNC_SERVICE = f'{URL_AV_HOME}/author/syncData/%%%?redirect={URL_AV_HOME}&act=serviceSync'
     URL_SYNC_WOS = f'{URL_AV_HOME}/author/syncData/%%%?redirect={URL_AV_HOME}&act=wosSync'
 
-    def __init__(self, requests_session: Session, logger: ()):
+    def __init__(self, requests_session: Session, timeout: int, logger: ()):
         super().__init__()
         self.print = logger
         self.s = requests_session
+        self.timeout = timeout
 
     @staticmethod
     def _book_heuristics_handler(el):
@@ -320,7 +321,7 @@ class UtilBackEnd(object):
         """ Send a GET HTTP request and throw errors in case of
         wrong credential or invalid input parameters, such as author_d. """
 
-        r = self.s.get(url)
+        r = self.s.get(url, timeout=self.timeout)
         if r.url == url:
             return r
 

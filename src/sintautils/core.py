@@ -50,6 +50,9 @@ class SintaScraper(object):
     # Determine if the timestamp should be given in the logging message.
     log_timestamp = False
 
+    # Timeout duration for Python Requests calls.
+    timeout = 30
+
     def __init__(self, username: str = '', password: str = ''):
         self.username = username
         self.password = password
@@ -92,7 +95,7 @@ class AV(SintaScraper):
             super().__init__(username, password)
 
             # Initializing the back-end.
-            self.backend = UtilBackEnd(self.s, self.print)
+            self.backend = UtilBackEnd(self.s, self.timeout, self.print)
 
             if autologin:
                 self.login()
@@ -280,8 +283,8 @@ class AV(SintaScraper):
                 save_file = str(out_folder) + os.sep + str(out_prefix) + str(dump_id) + '.xlsx'
                 wb.save(save_file)
 
-        if type(author_id) is str:
-            dump(dump_id=author_id)
+        if type(author_id) in (str, int):
+            dump(dump_id=str(author_id))
 
         elif type(author_id) is list:
             for l in author_id:
@@ -326,7 +329,7 @@ class AV(SintaScraper):
         - ["*"]
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.scrape_book(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
@@ -374,7 +377,7 @@ class AV(SintaScraper):
         - ["*"]
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.scrape_garuda(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
@@ -420,7 +423,7 @@ class AV(SintaScraper):
         - ["*"]
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.scrape_gscholar(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
@@ -467,7 +470,7 @@ class AV(SintaScraper):
         - ["*"]
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.scrape_ipr(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
@@ -514,7 +517,7 @@ class AV(SintaScraper):
         - ["*"]
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.scrape_research(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
@@ -562,7 +565,7 @@ class AV(SintaScraper):
         - ["*"]
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.scrape_scopus(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
@@ -609,7 +612,7 @@ class AV(SintaScraper):
         - ["*"]
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.scrape_service(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
@@ -656,7 +659,7 @@ class AV(SintaScraper):
         - ["*"]
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.scrape_wos(author_id=str(author_id), out_format=out_format, fields=fields)
 
         elif type(author_id) is list:
@@ -688,7 +691,7 @@ class AV(SintaScraper):
         :return: nothing.
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.sync_dikti(author_id=str(author_id))
 
         elif type(author_id) is list:
@@ -707,7 +710,7 @@ class AV(SintaScraper):
         :return: nothing.
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.sync_garuda(author_id=str(author_id))
 
         elif type(author_id) is list:
@@ -726,7 +729,7 @@ class AV(SintaScraper):
         :return: nothing.
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.sync_gscholar(author_id=str(author_id))
 
         elif type(author_id) is list:
@@ -745,7 +748,7 @@ class AV(SintaScraper):
         :return: nothing.
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.sync_research(author_id=str(author_id))
 
         elif type(author_id) is list:
@@ -764,7 +767,7 @@ class AV(SintaScraper):
         :return: nothing.
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.sync_scopus(author_id=str(author_id))
 
         elif type(author_id) is list:
@@ -783,7 +786,7 @@ class AV(SintaScraper):
         :return: nothing.
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.sync_service(author_id=str(author_id))
 
         elif type(author_id) is list:
@@ -802,7 +805,7 @@ class AV(SintaScraper):
         :return: nothing.
         """
 
-        if type(author_id) is str:
+        if type(author_id) in (str, int):
             a = self.backend.sync_wos(author_id=str(author_id))
 
         elif type(author_id) is list:

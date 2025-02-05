@@ -8,6 +8,11 @@
 - Added BIMA research and community service data synchronizer
 - Added Garuda, Google Scholar, Scopus, and Web of Science (WOS) data synchronizer
 
+:four_leaf_clover: **IMPROVEMENT**
+
+- Implemented timeout flag in the `requests` HTTP requests.
+- Implemented `str()` cast for integer inputs in `author_id` parameters.
+
 ## v0.0.1 2025.01.30 (1)
 
 :information_source: **INFO**
