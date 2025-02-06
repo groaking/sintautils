@@ -1,6 +1,6 @@
 # `sintautils` Project Change Log
 
-## Next planned release: v.0.0.2
+## v.0.0.2 2025.02.06 (2)
 
 :star2: **NEW**
 
