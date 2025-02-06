@@ -10,9 +10,11 @@
 
 :four_leaf_clover: **IMPROVEMENT**
 
+- Added trailing and leading whitespace stripper in the author ID parameter handler of backend syncer.
 - Implemented timeout flag in the `requests` HTTP requests.
 - Implemented `str()` cast for integer inputs in `author_id` parameters.
 - Removed duplicate author ID from list arguments in the scraper/syncer functions.
+- Enabled the default option for author dumper option to save files as the author's full name.
 
 ## v0.0.1 2025.01.30 (1)
 

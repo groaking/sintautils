@@ -35,7 +35,7 @@ scraper = AV('admin@university.edu', 'password1234', autologin=True)
 
 #### A.2.ii. Basic Usage
 
-After importing the modules and initializing the `AV` class, you can start dumping research information of a given author in SINTA using the `dump_author()` method. The following code dumps all research data pertaining to a SINTA author and saves the result to an Excel file named `sintautils_dump_author-1234.xlsx` under the current working directory. Each data category (IPR, book, Google Scholar publication, etc.) is represented by a separate Excel sheet.
+After importing the modules and initializing the `AV` class, you can start dumping research information of a given author in SINTA using the `dump_author()` method. The following code dumps all research data pertaining to a SINTA author and saves the result to an Excel file named `AUTHOR NAME_AUTHOR ID.xlsx` under the current working directory. Each data category (IPR, book, Google Scholar publication, etc.) is represented by a separate Excel sheet.
 
 ```python
 # Change "1234" to the respective author's SINTA ID.
