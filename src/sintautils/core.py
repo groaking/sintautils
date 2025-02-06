@@ -50,9 +50,6 @@ class SintaScraper(object):
     # Determine if the timestamp should be given in the logging message.
     log_timestamp = False
 
-    # Timeout duration for Python Requests calls.
-    timeout = 30
-
     def __init__(self, username: str = '', password: str = ''):
         self.username = username
         self.password = password
@@ -95,7 +92,7 @@ class AV(SintaScraper):
             super().__init__(username, password)
 
             # Initializing the back-end.
-            self.backend = UtilBackEnd(self.s, self.timeout, self.print)
+            self.backend = UtilBackEnd(self.s, self.print)
 
             if autologin:
                 self.login()
@@ -164,13 +161,15 @@ class AV(SintaScraper):
             out_folder: str = os.getcwd(),
             out_prefix: str = 'sintautils_dump_author-',
             out_format: str = 'xlsx',
-            fields: list = ['*']
+            fields: list = ['*'],
+            use_fullname_prefix: bool = True,
     ):
         """ Performs the scraping of an author's all-information data, and save it as a file.
 
         :param author_id: the list of author IDs to be scraped.
         :param out_folder: the output folder to which all scraping result files will be saved. Defaults to the current working directory.
         :param out_prefix: the prefix file name into which the scraping result(s) will be saved. The default output filename prefix is "sintautils_dump_author-".
+        :param use_fullname_prefix: whether to use the corresponding author's full name as file prefix. If set to "True" (the default), this parameter overrides the values passed to `out_prefix`.
 
         :param out_format: the format of the output result document.
 
@@ -211,10 +210,19 @@ class AV(SintaScraper):
 
         # This local function carries out the actual dumping of author data.
         def dump(dump_id):
-            a: dict = self._get_dump(dump_id, fields=fields)
+            di = str(dump_id).strip()
+            a: dict = self._get_dump(di, fields=fields)
+            r: str = self.backend.get_author_full_name(di)
+
+            # Whether to use author's full name or just a computer-readable file name.
+            if use_fullname_prefix:
+                op = str(out_folder) + os.sep + r + '_' + str(di)
+            else:
+                op = str(out_folder) + os.sep + str(out_prefix) + str(di)
+
             if out_format == 'csv':
                 for m in a.keys():
-                    with open(str(out_folder) + os.sep + str(out_prefix) + str(dump_id) + '-' + m + '.csv', 'w') as fo:
+                    with open(op + '-' + m + '.csv', 'w') as fo:
                         b: list = a[m]
 
                         # Length validation.
@@ -238,14 +246,14 @@ class AV(SintaScraper):
             elif out_format == 'json' or out_format == 'json-pretty':
                 b: dict = {
                     'data': {
-                        'author_id': dump_id,
+                        'author_id': di,
                         'scraping_date': int(time.time()),
                         'scraping_result': copy.deepcopy(a)
                     }
                 }
 
                 # Saving the JSON file.
-                with open(str(out_folder) + os.sep + str(out_prefix) + str(dump_id) + '.json', 'w') as fo:
+                with open(op + '.json', 'w') as fo:
                     if out_format == 'json-pretty':
                         json.dump(b, fo, indent=4)
                     else:
@@ -280,7 +288,7 @@ class AV(SintaScraper):
                             wb.remove(wb[d])
 
                 # Saving the spreadsheet.
-                save_file = str(out_folder) + os.sep + str(out_prefix) + str(dump_id) + '.xlsx'
+                save_file = op + '.xlsx'
                 wb.save(save_file)
 
         if type(author_id) in (str, int):

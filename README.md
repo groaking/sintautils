@@ -131,6 +131,8 @@ Also, you can sync an author's research and community service data with the info
 - [X] Add `str()` cast in the SINTA ID parameter, especially in `dump_author()`.
 - [X] Extend the `requests` timeout duration.
 - [X] Remove duplicates from the SINTA ID parameter.
+- [X] Add trailing and leading whitespace stripper in the author ID parameter handler of backend syncer.
+- [X] Enable the default option for author dumper option to save files as the author's full name.
 
 ## C. License Notice
 

@@ -39,6 +39,7 @@ class UtilBackEnd(object):
     URL_AUTHOR_IPR = f'{URL_AV_HOME}/author/profile/%%%?view=ipr'
     URL_AUTHOR_SCOPUS = f'{URL_AV_HOME}/author/profile/%%%?view=scopus'
     URL_AUTHOR_RESEARCH = f'{URL_AV_HOME}/author/profile/%%%?view=research'
+    URL_AUTHOR_PROFILE = f'{URL_AV_HOME}/author/profile/%%%?view=profile'
     URL_AUTHOR_SERVICE = f'{URL_AV_HOME}/author/profile/%%%?view=service'
     URL_AUTHOR_WOS = f'{URL_AV_HOME}/author/profile/%%%?view=wos'
 
@@ -50,11 +51,13 @@ class UtilBackEnd(object):
     URL_SYNC_SERVICE = f'{URL_AV_HOME}/author/syncData/%%%?redirect={URL_AV_HOME}&act=serviceSync'
     URL_SYNC_WOS = f'{URL_AV_HOME}/author/syncData/%%%?redirect={URL_AV_HOME}&act=wosSync'
 
-    def __init__(self, requests_session: Session, timeout: int, logger: ()):
+    # Timeout duration for Python Requests calls.
+    timeout = 120
+
+    def __init__(self, requests_session: Session, logger: ()):
         super().__init__()
         self.print = logger
         self.s = requests_session
-        self.timeout = timeout
 
     @staticmethod
     def _book_heuristics_handler(el):
@@ -331,6 +334,23 @@ class UtilBackEnd(object):
         elif 'authorverification/author/all' in r.url:
             raise AuthorIDNotFoundException(author_id)
 
+    # noinspection PyDefaultArgument,PyTypeChecker
+    def get_author_full_name(self, author_id: str):
+        """ This function returns a given author's full name based on author ID.
+        :param author_id: must be a string (or, technically, author ID integer). does not accept list.
+        :return: the respective author's full name (in uppercase string).
+        """
+        l: str = str(author_id).strip()
+
+        url = self.URL_AUTHOR_PROFILE.replace('%%%', l)
+        r = self._http_get_with_exception(url, author_id=l)
+        c = html.fromstring(r.text)
+        s = c.xpath('//input[@id="feFullname"]/@value')[0].strip()
+
+        self.print(f'Obtaining author full name for author ID {l}: {s}', 2)
+
+        return s
+
     # noinspection PyDefaultArgument
     def scrape_book(self, author_id: str, out_format: str = 'json', fields: list = ['*']):
         """ Scrape the book information of one, and only one author in SINTA.
@@ -364,7 +384,7 @@ class UtilBackEnd(object):
 
         # Try to open the author's specific menu page.
         url = self.URL_AUTHOR_BOOK.replace('%%%', l)
-        r = self._http_get_with_exception(url, author_id=author_id)
+        r = self._http_get_with_exception(url, author_id=l)
 
         self.print('Begin scrapping author ID ' + l + '...', 2)
 
@@ -395,7 +415,7 @@ class UtilBackEnd(object):
 
             # Opens the URL of this page.
             new_url = url + '&page=' + str(i)
-            r = self._http_get_with_exception(new_url, author_id=author_id)
+            r = self._http_get_with_exception(new_url, author_id=l)
             c = html.fromstring(r.text)
 
             # The base tag.
@@ -550,7 +570,7 @@ class UtilBackEnd(object):
 
         # Try to open the author's specific menu page.
         url = self.URL_AUTHOR_GARUDA.replace('%%%', l)
-        r = self._http_get_with_exception(url, author_id=author_id)
+        r = self._http_get_with_exception(url, author_id=l)
 
         self.print('Begin scrapping author ID ' + l + '...', 2)
 
@@ -581,7 +601,7 @@ class UtilBackEnd(object):
 
             # Opens the URL of this page.
             new_url = url + '&page=' + str(i)
-            r = self._http_get_with_exception(new_url, author_id=author_id)
+            r = self._http_get_with_exception(new_url, author_id=l)
             c = html.fromstring(r.text)
 
             # The base tag.
@@ -720,7 +740,7 @@ class UtilBackEnd(object):
 
         # Try to open the author's specific menu page.
         url = self.URL_AUTHOR_GSCHOLAR.replace('%%%', l)
-        r = self._http_get_with_exception(url, author_id=author_id)
+        r = self._http_get_with_exception(url, author_id=l)
 
         self.print('Begin scrapping author ID ' + l + '...', 2)
 
@@ -751,7 +771,7 @@ class UtilBackEnd(object):
 
             # Opens the URL of this page.
             new_url = url + '&page=' + str(i)
-            r = self._http_get_with_exception(new_url, author_id=author_id)
+            r = self._http_get_with_exception(new_url, author_id=l)
             c = html.fromstring(r.text)
 
             # The base tag.
@@ -889,7 +909,7 @@ class UtilBackEnd(object):
 
         # Try to open the author's specific menu page.
         url = self.URL_AUTHOR_IPR.replace('%%%', l)
-        r = self._http_get_with_exception(url, author_id=author_id)
+        r = self._http_get_with_exception(url, author_id=l)
 
         self.print('Begin scrapping author ID ' + l + '...', 2)
 
@@ -920,7 +940,7 @@ class UtilBackEnd(object):
 
             # Opens the URL of this page.
             new_url = url + '&page=' + str(i)
-            r = self._http_get_with_exception(new_url, author_id=author_id)
+            r = self._http_get_with_exception(new_url, author_id=l)
             c = html.fromstring(r.text)
 
             # The base tag.
@@ -1053,7 +1073,7 @@ class UtilBackEnd(object):
 
         # Try to open the author's specific menu page.
         url = self.URL_AUTHOR_RESEARCH.replace('%%%', l)
-        r = self._http_get_with_exception(url, author_id=author_id)
+        r = self._http_get_with_exception(url, author_id=l)
 
         self.print('Begin scrapping author ID ' + l + '...', 2)
 
@@ -1084,7 +1104,7 @@ class UtilBackEnd(object):
 
             # Opens the URL of this page.
             new_url = url + '&page=' + str(i)
-            r = self._http_get_with_exception(new_url, author_id=author_id)
+            r = self._http_get_with_exception(new_url, author_id=l)
             c = html.fromstring(r.text)
 
             # The base tag.
@@ -1218,7 +1238,7 @@ class UtilBackEnd(object):
 
         # Try to open the author's specific menu page.
         url = self.URL_AUTHOR_SCOPUS.replace('%%%', l)
-        r = self._http_get_with_exception(url, author_id=author_id)
+        r = self._http_get_with_exception(url, author_id=l)
 
         self.print('Begin scrapping author ID ' + l + '...', 2)
 
@@ -1249,7 +1269,7 @@ class UtilBackEnd(object):
 
             # Opens the URL of this page.
             new_url = url + '&page=' + str(i)
-            r = self._http_get_with_exception(new_url, author_id=author_id)
+            r = self._http_get_with_exception(new_url, author_id=l)
             c = html.fromstring(r.text)
 
             # The base tag.
@@ -1411,7 +1431,7 @@ class UtilBackEnd(object):
 
         # Try to open the author's specific menu page.
         url = self.URL_AUTHOR_SERVICE.replace('%%%', l)
-        r = self._http_get_with_exception(url, author_id=author_id)
+        r = self._http_get_with_exception(url, author_id=l)
 
         self.print('Begin scrapping author ID ' + l + '...', 2)
 
@@ -1442,7 +1462,7 @@ class UtilBackEnd(object):
 
             # Opens the URL of this page.
             new_url = url + '&page=' + str(i)
-            r = self._http_get_with_exception(new_url, author_id=author_id)
+            r = self._http_get_with_exception(new_url, author_id=l)
             c = html.fromstring(r.text)
 
             # The base tag.
@@ -1575,7 +1595,7 @@ class UtilBackEnd(object):
 
         # Try to open the author's specific menu page.
         url = self.URL_AUTHOR_WOS.replace('%%%', l)
-        r = self._http_get_with_exception(url, author_id=author_id)
+        r = self._http_get_with_exception(url, author_id=l)
 
         self.print('Begin scrapping author ID ' + l + '...', 2)
 
@@ -1606,7 +1626,7 @@ class UtilBackEnd(object):
 
             # Opens the URL of this page.
             new_url = url + '&page=' + str(i)
-            r = self._http_get_with_exception(new_url, author_id=author_id)
+            r = self._http_get_with_exception(new_url, author_id=l)
             c = html.fromstring(r.text)
 
             # The base tag.
@@ -1727,49 +1747,56 @@ class UtilBackEnd(object):
 
     def sync_dikti(self, author_id: str):
         """ Sync an author's PD-DIKTI profiles data. """
+        l: str = str(author_id).strip()
         self._http_get_with_exception(
-            self.URL_SYNC_DIKTI.replace('%%%', author_id),
-            author_id
+            self.URL_SYNC_DIKTI.replace('%%%', l),
+            l
         )
 
     def sync_garuda(self, author_id: str):
         """ Sync an author's garuda publication data. """
+        l: str = str(author_id).strip()
         self._http_get_with_exception(
-            self.URL_SYNC_GARUDA.replace('%%%', author_id),
-            author_id
+            self.URL_SYNC_GARUDA.replace('%%%', l),
+            l
         )
 
     def sync_gscholar(self, author_id: str):
         """ Sync an author's Google Scholar publication data. """
+        l: str = str(author_id).strip()
         self._http_get_with_exception(
-            self.URL_SYNC_GSCHOLAR.replace('%%%', author_id),
-            author_id
+            self.URL_SYNC_GSCHOLAR.replace('%%%', l),
+            l
         )
 
     def sync_research(self, author_id: str):
         """ Sync an author's research data. """
+        l: str = str(author_id).strip()
         self._http_get_with_exception(
-            self.URL_SYNC_RESEARCH.replace('%%%', author_id),
-            author_id
+            self.URL_SYNC_RESEARCH.replace('%%%', l),
+            l
         )
 
     def sync_scopus(self, author_id: str):
         """ Sync an author's Scopus publication data. """
+        l: str = str(author_id).strip()
         self._http_get_with_exception(
-            self.URL_SYNC_SCOPUS.replace('%%%', author_id),
-            author_id
+            self.URL_SYNC_SCOPUS.replace('%%%', l),
+            l
         )
 
     def sync_service(self, author_id: str):
         """ Sync an author's community service data. """
+        l: str = str(author_id).strip()
         self._http_get_with_exception(
-            self.URL_SYNC_SERVICE.replace('%%%', author_id),
-            author_id
+            self.URL_SYNC_SERVICE.replace('%%%', l),
+            l
         )
 
     def sync_wos(self, author_id: str):
         """ Sync an author's Web of Science (WOS) publication data. """
+        l: str = str(author_id).strip()
         self._http_get_with_exception(
-            self.URL_SYNC_WOS.replace('%%%', author_id),
-            author_id
+            self.URL_SYNC_WOS.replace('%%%', l),
+            l
         )
